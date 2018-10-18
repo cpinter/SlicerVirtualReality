@@ -40,6 +40,7 @@
 #include <QPushButton>
 #include <QToolButton>
 #include <QTimer>
+#include <QPixmap>
 
 // CTK includes
 #include <ctkAxesWidget.h>
@@ -56,7 +57,7 @@
 #include "vtkSlicerConfigure.h" // For Slicer_USE_OpenVR
 #include "vtkSlicerCamerasModuleLogic.h"
 
-// VirtualReality includes
+// VirtualReality MRML includes
 #include "vtkMRMLVirtualRealityViewNode.h"
 
 // MRMLDisplayableManager includes
@@ -116,6 +117,7 @@ qMRMLVirtualRealityViewPrivate::qMRMLVirtualRealityViewPrivate(qMRMLVirtualReali
   , CamerasLogic(nullptr)
 {
   this->MRMLVirtualRealityViewNode = nullptr;
+  this->HomeWidget = new qMRMLVirtualRealityHomeWidget(q_ptr);
 }
 
 //---------------------------------------------------------------------------
@@ -645,7 +647,6 @@ void qMRMLVirtualRealityViewPrivate::updateTransformNodesWithTrackerPoses()
   }
 }
 
-
 //----------------------------------------------------------------------------
 void qMRMLVirtualRealityViewPrivate::updateTransformNodeWithPose(vtkMRMLTransformNode* node, vr::TrackedDevicePose_t* tdPose)
 {
@@ -674,7 +675,6 @@ void qMRMLVirtualRealityViewPrivate::updateTransformNodeWithPose(vtkMRMLTransfor
   node->SetAttribute("VirtualReality.PoseStatus", PoseStatusToString(tdPose->eTrackingResult).c_str());
 }
 
-
 // --------------------------------------------------------------------------
 // qMRMLVirtualRealityView methods
 
@@ -690,6 +690,13 @@ qMRMLVirtualRealityView::qMRMLVirtualRealityView(QWidget* _parent) : Superclass(
 qMRMLVirtualRealityView::~qMRMLVirtualRealityView()
 {
 }
+
+//------------------------------------------------------------------------------
+void qMRMLVirtualRealityView::registerModule(QWidget* widget, QIcon& icon) 
+{
+  Q_D(qMRMLVirtualRealityView);
+  d->HomeWidget->addModuleButton(widget, icon);
+}  
 
 //------------------------------------------------------------------------------
 void qMRMLVirtualRealityView::addDisplayableManager(const QString& displayableManagerName)
@@ -728,6 +735,13 @@ vtkMRMLVirtualRealityViewNode* qMRMLVirtualRealityView::mrmlVirtualRealityViewNo
 {
   Q_D(const qMRMLVirtualRealityView);
   return d->MRMLVirtualRealityViewNode;
+}
+
+//----------------------------------------------------------------------------
+qMRMLVirtualRealityHomeWidget* qMRMLVirtualRealityView::vrHomeWidget()const
+{
+  Q_D(const qMRMLVirtualRealityView);
+  return d->HomeWidget;
 }
 
 //------------------------------------------------------------------------------
@@ -1005,4 +1019,18 @@ void qMRMLVirtualRealityView::updateViewFromReferenceViewCamera()
   d->RenderWindow->SetPhysicalScale(newPhysicalScale);
 
   ren->ResetCameraClippingRange();
+}
+
+//------------------------------------------------------------------------------
+void qMRMLVirtualRealityView::setVirtualWidget(QWidget* menuWidget)
+{
+  QPixmap menuTexture(menuWidget->size());
+  //TODO: Set VR style sheet on widget (large text etc)
+  menuWidget->render(&menuTexture);
+
+  bool errorCheck = menuTexture.save("menuTextureImage.png", "PNG", 100); 
+  if (!errorCheck)
+  {
+    qCritical() << Q_FUNC_INFO << ": Error while saving menu texture";
+  }
 }
