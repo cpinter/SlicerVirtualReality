@@ -16,19 +16,24 @@ set(${KIT}_SRCS
   qMRML${MODULE_NAME}View.h
   qMRML${MODULE_NAME}TransformWidget.cxx
   qMRML${MODULE_NAME}TransformWidget.h
+  qMRMLVirtualRealityHomeWidget.cxx
+  qMRMLVirtualRealityHomeWidget.h
   )
 
 set(${KIT}_MOC_SRCS
   qMRML${MODULE_NAME}View.h
   qMRML${MODULE_NAME}TransformWidget.h
   qMRML${MODULE_NAME}View_p.h
+  qMRMLVirtualRealityHomeWidget.h
   )
 
 set(${KIT}_UI_SRCS
+  Resources/UI/qMRMLVirtualRealityHomeWidget.ui
   Resources/UI/qMRML${MODULE_NAME}TransformWidget.ui
   )
 
 set(${KIT}_RESOURCES
+  Resources/${KIT}.qrc
   Resources/qMRML${MODULE_NAME}TransformWidget.qrc
   )
 
