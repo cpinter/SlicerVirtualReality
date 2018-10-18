@@ -61,6 +61,7 @@
 #include <QStringList>
 #include <QToolButton>
 #include <QTimer>
+#include <QPixmap>
 #include <QSettings>
 
 // CTK includes
@@ -69,6 +70,9 @@
 // Slicer includes
 #include <qSlicerApplication.h>
 #include <vtkSlicerCamerasModuleLogic.h>
+
+// VirtualReality MRML includes
+#include "vtkMRMLVirtualRealityViewNode.h"
 
 // MRMLDisplayableManager includes
 #include <vtkMRMLAbstractDisplayableManager.h>
@@ -164,6 +168,7 @@ qMRMLVirtualRealityViewPrivate::qMRMLVirtualRealityViewPrivate(qMRMLVirtualReali
   , CamerasLogic(nullptr)
 {
   this->MRMLVirtualRealityViewNode = nullptr;
+  this->HomeWidget = new qMRMLVirtualRealityHomeWidget(q_ptr);
 }
 
 //---------------------------------------------------------------------------
@@ -1268,7 +1273,6 @@ void qMRMLVirtualRealityViewPrivate
   node->SetMatrixTransformToParent(transform->GetMatrix());
 }
 
-
 // --------------------------------------------------------------------------
 // qMRMLVirtualRealityView methods
 
@@ -1329,6 +1333,13 @@ vtkMRMLVirtualRealityViewNode* qMRMLVirtualRealityView::mrmlVirtualRealityViewNo
 {
   Q_D(const qMRMLVirtualRealityView);
   return d->MRMLVirtualRealityViewNode;
+}
+
+//----------------------------------------------------------------------------
+qMRMLVirtualRealityHomeWidget* qMRMLVirtualRealityView::vrHomeWidget()const
+{
+  Q_D(const qMRMLVirtualRealityView);
+  return d->HomeWidget;
 }
 
 //------------------------------------------------------------------------------
@@ -1595,4 +1606,18 @@ void qMRMLVirtualRealityView::updateViewFromReferenceViewCamera()
   d->RenderWindow->SetPhysicalScale(newPhysicalScale);
 
   ren->ResetCameraClippingRange();
+}
+
+//------------------------------------------------------------------------------
+void qMRMLVirtualRealityView::setVirtualWidget(QWidget* menuWidget)
+{
+  QPixmap menuTexture(menuWidget->size());
+  //TODO: Set VR style sheet on widget (large text etc)
+  menuWidget->render(&menuTexture);
+
+  bool errorCheck = menuTexture.save("menuTextureImage.png", "PNG", 100); 
+  if (!errorCheck)
+  {
+    qCritical() << Q_FUNC_INFO << ": Error while saving menu texture";
+  }
 }

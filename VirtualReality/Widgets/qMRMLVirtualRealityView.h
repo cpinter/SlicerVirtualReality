@@ -41,6 +41,9 @@ class qMRMLVirtualRealityViewPrivate;
 // CTK includes
 #include <ctkVTKObject.h>
 
+class qMRMLVirtualRealityHomeWidget;
+class qMRMLVirtualRealityViewPrivate;
+class vtkMRMLVirtualRealityViewNode;
 // Slicer includes
 class vtkSlicerCamerasModuleLogic;
 
@@ -105,6 +108,8 @@ public:
   /// Get the 3D View node observed by view.
   Q_INVOKABLE vtkMRMLVirtualRealityViewNode* mrmlVirtualRealityViewNode()const;
 
+  Q_INVOKABLE qMRMLVirtualRealityHomeWidget* vrHomeWidget()const;
+
   /// Get a reference to the associated vtkRenderer
   vtkVRRenderer* renderer()const;
 
@@ -156,6 +161,8 @@ public:
   Q_INVOKABLE QString actionManifestPath() const;
   ///@}
 
+  void registerModule(QWidget* widget, QIcon& icon);
+
 signals:
 
   void physicalToWorldMatrixModified();
@@ -185,8 +192,10 @@ public slots:
   void onPhysicalToWorldMatrixModified();
   void onButton3DEvent(vtkObject* caller, void* call_data, unsigned long vtk_event, void* client_data);
 
-protected:
+  /// Set widget that is being shown on the "tablet panel" in virtual reality
+  void setVirtualWidget(QWidget*);
 
+protected:
   QScopedPointer<qMRMLVirtualRealityViewPrivate> d_ptr;
 
 private:

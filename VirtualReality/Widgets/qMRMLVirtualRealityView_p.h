@@ -70,6 +70,12 @@ class vtkTimerLog;
 // CTK includes
 #include <ctkVTKObject.h>
 
+// VirtualReality Widgets includes
+#include "qMRMLVirtualRealityHomeWidget.h"
+
+// qMRML includes
+#include "qMRMLVirtualRealityView.h"
+
 // Qt includes
 #include <QObject>
 #include <QString>
@@ -171,6 +177,8 @@ protected:
   GLint  DepthBlitHeight{ 0 };
 
   QTimer VirtualRealityLoopTimer;
+
+  qMRMLVirtualRealityHomeWidget* HomeWidget;
 };
 
 #endif
