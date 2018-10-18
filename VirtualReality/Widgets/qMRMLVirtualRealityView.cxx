@@ -40,6 +40,7 @@
 #include <QPushButton>
 #include <QToolButton>
 #include <QTimer>
+#include <QPixmap>
 
 // CTK includes
 #include <ctkAxesWidget.h>
@@ -783,4 +784,17 @@ void qMRMLVirtualRealityView::updateViewFromReferenceViewCamera()
   d->RenderWindow->SetPhysicalScale(newPhysicalScale);
 
   ren->ResetCameraClippingRange();
+}
+
+//------------------------------------------------------------------------------
+void qMRMLVirtualRealityView::setVirtualWidget(QWidget* menuWidget)
+{
+  QPixmap menuTexture(menuWidget->size());
+  menuWidget->render(&menuTexture);
+
+  bool errorCheck = menuTexture.save("menuTextureImage.png", "PNG", 100); 
+  if (!errorCheck)
+  {
+    qCritical() << Q_FUNC_INFO << ": Error while saving menu texture";
+  }
 }

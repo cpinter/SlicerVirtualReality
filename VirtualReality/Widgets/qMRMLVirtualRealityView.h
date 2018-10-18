@@ -109,6 +109,9 @@ public slots:
 
   void onPhysicalToWorldMatrixModified();
 
+  /// Set widget that is being shown on the "tablet panel" in virtual reality
+  void setVirtualWidget(QWidget*);
+
 protected:
 
   QScopedPointer<qMRMLVirtualRealityViewPrivate> d_ptr;
