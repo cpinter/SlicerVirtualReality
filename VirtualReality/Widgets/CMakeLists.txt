@@ -17,17 +17,22 @@ set(${KIT}_SRCS
   qMRMLVirtualRealityView.cxx
   qMRMLVirtualRealityView_p.h
   qMRMLVirtualRealityView.h
+  qMRMLVirtualRealityHomeWidget.cxx
+  qMRMLVirtualRealityHomeWidget.h
   )
 
 set(${KIT}_MOC_SRCS
   qMRMLVirtualRealityView.h
   qMRMLVirtualRealityView_p.h
+  qMRMLVirtualRealityHomeWidget.h
   )
 
 set(${KIT}_UI_SRCS
+  Resources/UI/qMRMLVirtualRealityHomeWidget.ui
   )
 
 set(${KIT}_RESOURCES
+  Resources/${KIT}.qrc
   )
 
 set(${KIT}_TARGET_LIBRARIES

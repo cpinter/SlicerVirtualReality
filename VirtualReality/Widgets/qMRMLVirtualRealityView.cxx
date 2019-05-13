@@ -790,6 +790,7 @@ void qMRMLVirtualRealityView::updateViewFromReferenceViewCamera()
 void qMRMLVirtualRealityView::setVirtualWidget(QWidget* menuWidget)
 {
   QPixmap menuTexture(menuWidget->size());
+  //TODO: Set VR style sheet on widget (large text etc)
   menuWidget->render(&menuTexture);
 
   bool errorCheck = menuTexture.save("menuTextureImage.png", "PNG", 100); 
