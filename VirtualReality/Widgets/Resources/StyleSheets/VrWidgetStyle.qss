@@ -2,13 +2,13 @@ QAbstractButton,
 QPushButton {
     border-style: solid;
     border-width: 1px;
-    border-radius: 0px;
+    border-radius: 10px;
     background-color: #FFFFFF;
     border-color: #3a3a3a;
     color: #3a3a3a;
-    font-family: Segoe UI,Frutiger,Frutiger Linotype,Dejavu Sans,Helvetica Neue,Arial,sans-serif;
-    font: bold 12pt;
-    font-weight: 400;
+    font-family: Helvetica;
+    font: bold 14pt;
+    font-weight: 4;
     padding: 4px;
 }
 
@@ -16,13 +16,13 @@ QAbstractButton:pressed,
 QPushButton:pressed {
     border-style: solid;
     border-width: 1px;
-    border-radius: 0px;
-    background-color: #D7D7D7;
+    border-radius: 10px;
+    background-color: #525252;
     border-color: #3a3a3a;
     color: #3a3a3a;
-    font-family: Segoe UI,Frutiger,Frutiger Linotype,Dejavu Sans,Helvetica Neue,Arial,sans-serif;
-    font: bold 12pt;
-    font-weight: 400;
+    font-family: Helvetica;
+    font: bold 14pt;
+    font-weight: 4;
     padding: 4px;
 }
 
@@ -30,44 +30,71 @@ QAbstractButton:checked,
 QPushButton:checked {
     border-style: solid;
     border-width: 1px;
-    border-radius: 0px;
-    background-color: #D7D7D7;
+    border-radius: 10px;
+    background-color: #525252;
     border-color: #3a3a3a;
     color: #3a3a3a;
-    font-family: Segoe UI,Frutiger,Frutiger Linotype,Dejavu Sans,Helvetica Neue,Arial,sans-serif;
-    font: bold 12pt;
-    font-weight: 400;
-    padding: 4px;
+    font-family:Helvetica;
+    font: bold 14pt;   
+    font-weight: 4;
+    padding: 2px;
 }
 
+AbstractButton:hover,
+QPushButton:hover {
+	background-color:#ABABAB;
+}
+
+QAbstractButton:pressed,
+QPushButton:pressed{
+	background-color:#525252
+}
+
+
 QSlider::handle:horizontal {
-	background-color: white;
-	border: 2px solid black;
-	width: 10px;
-	height: 12px;
+    background-color: white;
+    width: 10px;
+    border: 2px solid black;
+	border-radius: 4px;
+    height: 10px;
+}
+	
+QSlider::handle:horizontal:hover {
+    background-color: #ABABAB;
+}
+
+QSlider::handle:horizontal:pressed {
+	background-color: #525252;
 }
 
 QLabel {
-    font-family: Segoe UI,Frutiger,Frutiger Linotype,Dejavu Sans,Helvetica Neue,Arial,sans-serif;
-    font: bold 12pt;
-    font-weight: 400;
+    font: bold 14pt Helvetica;
+    font-weight: 10;
     color: #3a3a3a;
-    margin-left: 4px; margin-right: 4px;
+    margin-left: 4px; margin-right: 4px; 
 }
 
 QCheckBox,
 QCheckBox:pressed,
 QCheckBox:checked {
     border-style: none;
-    font: bold 12pt;
-    font-weight: 400;
+    font: bold 12pt Helvetica;
+    font-weight: 1;
+    background-color: #FFFFFF;
+    color: #3a3a3a;
+	margin-right: 100px
+}
+
+QCheckBox:hover,
+QCheckBox:pressed:hover {
+	background-color:#ABABAB;
+}
+
+ctkSliderWidget {
+    font: bold 10pt;
+    font-weight: 1;
     background-color: #FFFFFF;
     color: #3a3a3a;
 }
 
-ctkSliderWidget {
-    font: bold 12pt;
-    font-weight: 400;
-    background-color: #FFFFFF;
-    color: #3a3a3a;
-}
+
