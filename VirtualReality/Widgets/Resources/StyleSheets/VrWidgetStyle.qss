@@ -48,3 +48,4 @@ QSlider::handle:horizontal:hover {
 QSlider::handle:horizontal:pressed {
 	background: #525252;
 }
+
