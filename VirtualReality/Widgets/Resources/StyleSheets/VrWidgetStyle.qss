@@ -1,100 +1,50 @@
-QAbstractButton,
-QPushButton {
-    border-style: solid;
-    border-width: 1px;
-    border-radius: 10px;
-    background-color: #FFFFFF;
-    border-color: #3a3a3a;
+QWidget {
+	font: 20px;
+}
+
+QAbstractButton {
     color: #3a3a3a;
-    font-family: Helvetica;
-    font: bold 14pt;
-    font-weight: 4;
+    border-color: #3a3a3a;
+	border-style: solid;
+    border-width: 1px;
+    border-radius: 10px; 
     padding: 4px;
 }
 
-QAbstractButton:pressed,
-QPushButton:pressed {
-    border-style: solid;
-    border-width: 1px;
-    border-radius: 10px;
-    background-color: #525252;
-    border-color: #3a3a3a;
-    color: #3a3a3a;
-    font-family: Helvetica;
-    font: bold 14pt;
-    font-weight: 4;
-    padding: 4px;
-}
-
-QAbstractButton:checked,
-QPushButton:checked {
-    border-style: solid;
-    border-width: 1px;
-    border-radius: 10px;
-    background-color: #525252;
-    border-color: #3a3a3a;
-    color: #3a3a3a;
-    font-family:Helvetica;
-    font: bold 14pt;   
-    font-weight: 4;
-    padding: 2px;
-}
-
-AbstractButton:hover,
-QPushButton:hover {
+QAbstractButton:hover {
 	background-color:#ABABAB;
 }
 
-QAbstractButton:pressed,
-QPushButton:pressed{
-	background-color:#525252
+QAbstractButton:pressed {
+    background-color: #525252;
 }
 
+QSlider {
+    min-height: 68px;
+    max-height: 68px;
+    background: white;
+}
+
+QSlider::groove:horizontal {
+    border: 1px solid #262626;
+	height: 5px;
+    background: #399aef;
+    margin: 0 12px;
+}
 
 QSlider::handle:horizontal {
-    background-color: white;
-    width: 10px;
+    background: white;
     border: 2px solid black;
-	border-radius: 4px;
-    height: 10px;
+	border-radius: 10px;
+    width: 23px;
+    height: 100px;
+    margin: -24px -12px;
 }
-	
+
 QSlider::handle:horizontal:hover {
-    background-color: #ABABAB;
+	background: #ABABAB;
 }
 
 QSlider::handle:horizontal:pressed {
-	background-color: #525252;
+	background: #525252;
 }
-
-QLabel {
-    font: bold 14pt Helvetica;
-    font-weight: 10;
-    color: #3a3a3a;
-    margin-left: 4px; margin-right: 4px; 
-}
-
-QCheckBox,
-QCheckBox:pressed,
-QCheckBox:checked {
-    border-style: none;
-    font: bold 12pt Helvetica;
-    font-weight: 1;
-    background-color: #FFFFFF;
-    color: #3a3a3a;
-	margin-right: 100px
-}
-
-QCheckBox:hover,
-QCheckBox:pressed:hover {
-	background-color:#ABABAB;
-}
-
-ctkSliderWidget {
-    font: bold 10pt;
-    font-weight: 1;
-    background-color: #FFFFFF;
-    color: #3a3a3a;
-}
-
-
