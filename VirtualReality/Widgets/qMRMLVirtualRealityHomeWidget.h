@@ -56,6 +56,16 @@ public slots:
   /// Set virtual reality view MRML node
   void setVirtualRealityViewNode(vtkMRMLVirtualRealityViewNode* node);
 
+  void onMotionSensitivityChanged(double);
+  void onFlySpeedChanged(double);
+  void onMagnification001xPressed();
+  void onMagnification01xPressed();
+  void onMagnification1xPressed();
+  void onMagnification10xPressed();
+  void onMagnification100xPressed();
+  //void updateViewFromReferenceViewCamera();
+  //void setMagnificationLock(bool);
+
 protected slots:
   /// Update widgets from the MRML node
   void updateWidgetFromMRML();

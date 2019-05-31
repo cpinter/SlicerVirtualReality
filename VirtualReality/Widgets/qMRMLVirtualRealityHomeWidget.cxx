@@ -34,7 +34,7 @@
 #include <QDebug>
 
 //-----------------------------------------------------------------------------
-class qMRMLVirtualRealityHomeWidgetPrivate: public Ui_qMRMLVirtualRealityHomeWidget
+class qMRMLVirtualRealityHomeWidgetPrivate : public Ui_qMRMLVirtualRealityHomeWidget
 {
   Q_DECLARE_PUBLIC(qMRMLVirtualRealityHomeWidget);
 
@@ -68,14 +68,19 @@ void qMRMLVirtualRealityHomeWidgetPrivate::init()
   Q_Q(qMRMLVirtualRealityHomeWidget);
   this->setupUi(q);
 
-  // Make connections
-  // QObject::connect(this->MRMLNodeComboBox_SourceGeometryNode, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
-  //   q, SLOT(onSourceNodeChanged(vtkMRMLNode*)) );
+  QObject::connect(this->MotionSensitivitySliderWidget, SIGNAL(valueChanged(double)), q, SLOT(onMotionSensitivityChanged(double)));
+  QObject::connect(this->FlySpeedSliderWidget, SIGNAL(valueChanged(double)), q, SLOT(onFlySpeedChanged(double)));
+  QObject::connect(this->Magnification001xButton, SIGNAL(clicked()), q, SLOT(onMagnification001xPressed()));
+  QObject::connect(this->Magnification01xButton, SIGNAL(clicked()), q, SLOT(onMagnification01xPressed()));
+  QObject::connect(this->Magnification1xButton, SIGNAL(clicked()), q, SLOT(onMagnification1xPressed()));
+  QObject::connect(this->Magnification10xButton, SIGNAL(clicked()), q, SLOT(onMagnification10xPressed()));
+  QObject::connect(this->Magnification100xButton, SIGNAL(clicked()), q, SLOT(onMagnification100xPressed()));
+  QObject::connect(this->SyncViewToReferenceViewButton, SIGNAL(clicked()), q, SLOT(updateViewFromReferenceViewCamera()));
 
-  // q->setEnabled(this->SegmentationDisplayNode.GetPointer());
+  //QObject::connect(this->LockMagnificationCheckBox, SIGNAL(toggled(bool)), q, SLOT(setMagnificationLock(bool)));
+  //TODO: Magnification lock of view node not implemented yet 
+
 }
-
-
 
 //-----------------------------------------------------------------------------
 // qMRMLVirtualRealityHomeWidget methods
@@ -109,7 +114,7 @@ QString qMRMLVirtualRealityHomeWidget::virtualRealityViewNodeID()const
 }
 
 //-----------------------------------------------------------------------------
-void qMRMLVirtualRealityHomeWidget::setVirtualRealityViewNode(vtkMRMLVirtualRealityViewNode* node)
+void qMRMLVirtualRealityHomeWidget::setVirtualRealityViewNode(vtkMRMLVirtualRealityViewNode * node)
 {
   Q_D(qMRMLVirtualRealityHomeWidget);
 
@@ -130,19 +135,167 @@ void qMRMLVirtualRealityHomeWidget::setVirtualRealityViewNode(vtkMRMLVirtualReal
 void qMRMLVirtualRealityHomeWidget::updateWidgetFromMRML()
 {
   Q_D(qMRMLVirtualRealityHomeWidget);
+  vtkMRMLVirtualRealityViewNode* vrViewNode = d->VirtualRealityViewNode;
 
-  // Sanity check
-  // this->setEnabled(d->SegmentationNode.GetPointer());
-  // if (!d->SegmentationNode.GetPointer())
-  //   {
-  //   d->frame_SourceGeometry->setVisible(false);
-  //   d->groupBox_VolumeSpacingOptions->setVisible(false);
-  //   d->MRMLCoordinatesWidget_Spacing->setEnabled(false);
-  //   d->label_Error->setText("No segmentation node specified!");
-  //   d->label_Error->setVisible(true);
-  //   d->updateGeometryWidgets();
-  //   return;
-  //   }
+  bool wasBlocked = d->MotionSensitivitySliderWidget->blockSignals(true);
+  d->MotionSensitivitySliderWidget->setValue(vrViewNode != nullptr ? vrViewNode->GetMotionSensitivity() * 100.0 : 0);
+  d->MotionSensitivitySliderWidget->setEnabled(vrViewNode != nullptr);
+  d->MotionSensitivitySliderWidget->blockSignals(wasBlocked);
 
-  //TODO: Update widgets from VR view node
+  wasBlocked = d->FlySpeedSliderWidget->blockSignals(true);
+  d->FlySpeedSliderWidget->setValue(vrViewNode != nullptr ? vrViewNode->GetMotionSpeed() : 1.6666);
+  d->FlySpeedSliderWidget->setEnabled(vrViewNode != nullptr);
+  d->FlySpeedSliderWidget->blockSignals(wasBlocked);
+
+  /*
+  bool wasBlocked = d->LockMagnificationCheckBox->blockSignals(true);
+  d->LockMagnificationCheckBox->setChecked(vrViewNode != nullptr && vrViewNode->);
+  d->LockMagnificationCheckBox->setEnabled(vrViewNode != nullptr);
+  d->LockMagnificationCheckBox->blockSignals(wasBlocked);
+  */
+  //TODO: Magnification lock of view node not implemented yet 
+
+  d->Magnification001xButton->setEnabled(vrViewNode != nullptr && vrViewNode->GetMagnification() != NULL);
+  d->Magnification01xButton->setEnabled(vrViewNode != nullptr && vrViewNode->GetMagnification() != NULL);
+  d->Magnification1xButton->setEnabled(vrViewNode != nullptr && vrViewNode->GetMagnification() != NULL);
+  d->Magnification10xButton->setEnabled(vrViewNode != nullptr && vrViewNode->GetMagnification() != NULL);
+  d->Magnification100xButton->setEnabled(vrViewNode != nullptr && vrViewNode->GetMagnification() != NULL);
 }
+
+//-----------------------------------------------------------------------------
+void qMRMLVirtualRealityHomeWidget::onMotionSensitivityChanged(double percent)
+{
+  Q_D(qMRMLVirtualRealityHomeWidget);
+  vtkMRMLVirtualRealityViewNode* vrViewNode = d->VirtualRealityViewNode;
+
+  if (!vrViewNode)
+  {
+    qCritical() << Q_FUNC_INFO << " Failed: view node is null";
+    return;
+  }
+
+  vrViewNode->SetMotionSensitivity(percent * 0.01);
+}
+
+//-----------------------------------------------------------------------------
+void qMRMLVirtualRealityHomeWidget::onFlySpeedChanged(double speedMps)
+{
+  Q_D(qMRMLVirtualRealityHomeWidget);
+  vtkMRMLVirtualRealityViewNode* vrViewNode = d->VirtualRealityViewNode;
+
+  if (!vrViewNode)
+  {
+    qCritical() << Q_FUNC_INFO << " Failed: view node is null";
+    return;
+  }
+  vrViewNode->SetMotionSpeed(speedMps);
+}
+
+//-----------------------------------------------------------------------------
+void qMRMLVirtualRealityHomeWidget::onMagnification001xPressed()
+{
+  Q_D(qMRMLVirtualRealityHomeWidget);
+  vtkMRMLVirtualRealityViewNode* vrViewNode = d->VirtualRealityViewNode;
+
+  if (!vrViewNode)
+  {
+    qCritical() << Q_FUNC_INFO << " Failed: view node is null";
+    return;
+  }
+  vrViewNode->SetMagnification(0.01);
+}
+
+//-----------------------------------------------------------------------------
+void qMRMLVirtualRealityHomeWidget::onMagnification01xPressed()
+{
+  Q_D(qMRMLVirtualRealityHomeWidget);
+  vtkMRMLVirtualRealityViewNode* vrViewNode = d->VirtualRealityViewNode;
+
+  if (!vrViewNode)
+  {
+    qCritical() << Q_FUNC_INFO << " Failed: view node is null";
+    return;
+  }
+  vrViewNode->SetMagnification(0.1);
+}
+
+//-----------------------------------------------------------------------------
+void qMRMLVirtualRealityHomeWidget::onMagnification1xPressed()
+{
+  Q_D(qMRMLVirtualRealityHomeWidget);
+  vtkMRMLVirtualRealityViewNode* vrViewNode = d->VirtualRealityViewNode;
+
+  if (!vrViewNode)
+  {
+    qCritical() << Q_FUNC_INFO << " Failed: view node is null";
+    return;
+  }
+  vrViewNode->SetMagnification(1.0);
+}
+
+//-----------------------------------------------------------------------------
+void qMRMLVirtualRealityHomeWidget::onMagnification10xPressed()
+{
+  Q_D(qMRMLVirtualRealityHomeWidget);
+  vtkMRMLVirtualRealityViewNode* vrViewNode = d->VirtualRealityViewNode;
+
+  if (!vrViewNode)
+  {
+    qCritical() << Q_FUNC_INFO << " Failed: view node is null";
+    return;
+  }
+  vrViewNode->SetMagnification(10.0);
+}
+
+//-----------------------------------------------------------------------------
+void qMRMLVirtualRealityHomeWidget::onMagnification100xPressed()
+{
+  Q_D(qMRMLVirtualRealityHomeWidget);
+  vtkMRMLVirtualRealityViewNode* vrViewNode = d->VirtualRealityViewNode;
+
+  if (!vrViewNode)
+  {
+    qCritical() << Q_FUNC_INFO << " Failed: view node is null";
+    return;
+  }
+  vrViewNode->SetMagnification(100.0);
+}
+
+//-----------------------------------------------------------------------------
+/*
+void qMRMLVirtualRealityHomeWidget::updateViewFromReferenceViewCamera()
+{
+  Q_D(qMRMLVirtualRealityHomeWidget);
+  qSlicerVirtualRealityModule* vrModule = dynamic_cast<qSlicerVirtualRealityModule*>(this->module());
+  if (!vrModule)
+  {
+    qCritical() << Q_FUNC_INFO << " Failed: vrModule is null";
+    return;
+  }
+  qMRMLVirtualRealityView* vrView = vrModule->viewWidget();
+  if (!vrView)
+  {
+    qCritical() << Q_FUNC_INFO << " Failed: view node is null";
+    return;
+  }
+  vrView->updateViewFromReferenceViewCamera();
+}
+*/
+//TODO: This member function won't work unless qSlicerVirtualRealityModule and qMRMLVirtualRealityView are included
+
+//-----------------------------------------------------------------------------
+/*
+void qMRMLVirtualRealityHomeWidget::setMagnificationLock(bool active)
+{
+  Q_D(qMRMLVirtualRealityHomeWidget);
+  vtkMRMLVirtualRealityViewNode* vrViewNode = d->VirtualRealityViewNode;
+
+  if (!vrViewNode)
+  {
+   qCritical() << Q_FUNC_INFO << " Failed: view node is null";
+   return;
+  }
+   vrViewNode->????(active);  //TODO: Implement magnification lock for view node
+
+}
+*/
