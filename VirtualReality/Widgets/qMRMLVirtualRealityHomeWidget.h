@@ -32,6 +32,10 @@
 #include <ctkPimpl.h>
 #include <ctkVTKObject.h>
 
+// Qt includes 
+#include <QIcon>
+#include <QPushButton>
+
 class vtkMRMLVirtualRealityViewNode;
 class qMRMLVirtualRealityHomeWidgetPrivate;
 
@@ -65,6 +69,10 @@ public slots:
   void onMagnification100xPressed();
   //void updateViewFromReferenceViewCamera();
   //void setMagnificationLock(bool);
+
+  void addModuleButton(QWidget* moduleWidget, QIcon& icon);
+  void onModuleButtonPressed();
+  void onBackButtonPressed();
 
 protected slots:
   /// Update widgets from the MRML node
