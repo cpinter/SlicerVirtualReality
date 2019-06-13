@@ -32,6 +32,7 @@
 
 // Qt includes
 #include <QDebug>
+#include <QIcon>
 
 //-----------------------------------------------------------------------------
 class qMRMLVirtualRealityHomeWidgetPrivate : public Ui_qMRMLVirtualRealityHomeWidget
@@ -40,10 +41,14 @@ class qMRMLVirtualRealityHomeWidgetPrivate : public Ui_qMRMLVirtualRealityHomeWi
 
 protected:
   qMRMLVirtualRealityHomeWidget* const q_ptr;
+
 public:
   qMRMLVirtualRealityHomeWidgetPrivate(qMRMLVirtualRealityHomeWidget& object);
   virtual ~qMRMLVirtualRealityHomeWidgetPrivate();
+  
   void init();
+
+  QMap<QPushButton*, QWidget*> ModuleWidgetsMap;
 
 public:
   /// Virtual reality view MRML node
@@ -68,6 +73,8 @@ void qMRMLVirtualRealityHomeWidgetPrivate::init()
   Q_Q(qMRMLVirtualRealityHomeWidget);
   this->setupUi(q);
 
+  this->backButton->setVisible(false);
+
   QObject::connect(this->MotionSensitivitySliderWidget, SIGNAL(valueChanged(double)), q, SLOT(onMotionSensitivityChanged(double)));
   QObject::connect(this->FlySpeedSliderWidget, SIGNAL(valueChanged(double)), q, SLOT(onFlySpeedChanged(double)));
   QObject::connect(this->Magnification001xButton, SIGNAL(clicked()), q, SLOT(onMagnification001xPressed()));
@@ -79,7 +86,6 @@ void qMRMLVirtualRealityHomeWidgetPrivate::init()
 
   //QObject::connect(this->LockMagnificationCheckBox, SIGNAL(toggled(bool)), q, SLOT(setMagnificationLock(bool)));
   //TODO: Magnification lock of view node not implemented yet 
-
 }
 
 //-----------------------------------------------------------------------------
@@ -104,6 +110,67 @@ vtkMRMLVirtualRealityViewNode* qMRMLVirtualRealityHomeWidget::virtualRealityView
 {
   Q_D(const qMRMLVirtualRealityHomeWidget);
   return d->VirtualRealityViewNode;
+}
+
+//-----------------------------------------------------------------------------
+void qMRMLVirtualRealityHomeWidget::addModuleButton(QWidget* moduleWidget, QIcon& icon)
+{
+  Q_D(qMRMLVirtualRealityHomeWidget);
+
+  if (!moduleWidget)
+  {
+    qCritical() << Q_FUNC_INFO << "Failed: widget is null";
+    return;
+  }
+
+  QPushButton* moduleButton = new QPushButton(d->ModulesGroupBox);  
+  d->ModulesGroupBoxLayout->addWidget(moduleButton);
+  moduleButton->setIcon(icon);
+  
+  moduleWidget->setParent(d->ModuleWidgetFrame);
+  d->ModuleWidgetsMap[moduleButton] = moduleWidget;
+
+  QObject::connect(moduleButton, SIGNAL(clicked()), this, SLOT(onModuleButtonPressed()));
+  QObject::connect(d->backButton, SIGNAL(clicked()), this, SLOT(onBackButtonPressed()));
+ 
+  moduleButton->setVisible(true);
+  moduleWidget->setVisible(false);
+  d->backButton->setVisible(false);
+}
+
+//-----------------------------------------------------------------------------
+void qMRMLVirtualRealityHomeWidget::onModuleButtonPressed()
+{
+  Q_D(qMRMLVirtualRealityHomeWidget);
+
+  QPushButton* moduleButton = qobject_cast<QPushButton*>(sender());
+  
+  if (!moduleButton)
+  {
+    qCritical() << Q_FUNC_INFO << "Failed: moduleButton is null";
+    return;
+  }
+
+  d->HomeWidgetFrame->setVisible(false);
+  d->ModulesGroupBox->setVisible(false);
+  d->ModuleWidgetsMap[moduleButton]->setVisible(true);
+  d->backButton->setVisible(true);
+}
+
+//-----------------------------------------------------------------------------
+void  qMRMLVirtualRealityHomeWidget::onBackButtonPressed()
+{
+  Q_D(qMRMLVirtualRealityHomeWidget);
+  d->HomeWidgetFrame->setVisible(true);
+  d->ModulesGroupBox->setVisible(true); 
+  d->backButton->setVisible(false);
+
+  QMap<QPushButton*, QWidget*>::const_iterator iteratorForMap; 
+  for (iteratorForMap = d->ModuleWidgetsMap.constBegin(); iteratorForMap != d->ModuleWidgetsMap.constEnd(); ++iteratorForMap) 
+  {
+    iteratorForMap.value()->setVisible(false); 
+  }
+
 }
 
 //-----------------------------------------------------------------------------
@@ -159,7 +226,7 @@ void qMRMLVirtualRealityHomeWidget::updateWidgetFromMRML()
   d->Magnification01xButton->setEnabled(vrViewNode != nullptr && vrViewNode->GetMagnification() != NULL);
   d->Magnification1xButton->setEnabled(vrViewNode != nullptr && vrViewNode->GetMagnification() != NULL);
   d->Magnification10xButton->setEnabled(vrViewNode != nullptr && vrViewNode->GetMagnification() != NULL);
-  d->Magnification100xButton->setEnabled(vrViewNode != nullptr && vrViewNode->GetMagnification() != NULL);
+  d->Magnification100xButton->setEnabled(vrViewNode != nullptr && vrViewNode->GetMagnification() != NULL); 
 }
 
 //-----------------------------------------------------------------------------
@@ -173,7 +240,6 @@ void qMRMLVirtualRealityHomeWidget::onMotionSensitivityChanged(double percent)
     qCritical() << Q_FUNC_INFO << " Failed: view node is null";
     return;
   }
-
   vrViewNode->SetMotionSensitivity(percent * 0.01);
 }
 

@@ -33,6 +33,7 @@
 // CTK includes
 #include <ctkVTKObject.h> 
 
+class qMRMLVirtualRealityHomeWidget;
 class qMRMLVirtualRealityViewPrivate;
 class vtkMRMLVirtualRealityViewNode;
 class vtkCollection;
@@ -84,6 +85,8 @@ public:
   /// Get the 3D View node observed by view.
   Q_INVOKABLE vtkMRMLVirtualRealityViewNode* mrmlVirtualRealityViewNode()const;
 
+  Q_INVOKABLE qMRMLVirtualRealityHomeWidget* vrHomeWidget()const;
+
   /// Get a reference to the associated vtkRenderer
   vtkOpenVRRenderer* renderer()const;
 
@@ -100,6 +103,8 @@ public:
   /// Get underlying RenderWindow
   Q_INVOKABLE bool isHardwareConnected()const;
 
+  void registerModule(QWidget* widget, QIcon& icon);
+
 signals:
   void physicalToWorldMatrixModified();
 
@@ -113,7 +118,6 @@ public slots:
   void setVirtualWidget(QWidget*);
 
 protected:
-
   QScopedPointer<qMRMLVirtualRealityViewPrivate> d_ptr;
 
 private:
