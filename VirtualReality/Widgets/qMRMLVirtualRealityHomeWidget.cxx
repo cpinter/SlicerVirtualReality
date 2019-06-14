@@ -240,6 +240,7 @@ void qMRMLVirtualRealityHomeWidget::onMotionSensitivityChanged(double percent)
     qCritical() << Q_FUNC_INFO << " Failed: view node is null";
     return;
   }
+
   vrViewNode->SetMotionSensitivity(percent * 0.01);
 }
 
