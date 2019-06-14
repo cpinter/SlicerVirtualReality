@@ -31,7 +31,7 @@
 #include "qSlicerVirtualRealityModuleWidgetsExport.h"
 
 // CTK includes
-#include <ctkVTKObject.h> 
+#include <ctkVTKObject.h>
 
 class qMRMLVirtualRealityHomeWidget;
 class qMRMLVirtualRealityViewPrivate;
@@ -85,6 +85,7 @@ public:
   /// Get the 3D View node observed by view.
   Q_INVOKABLE vtkMRMLVirtualRealityViewNode* mrmlVirtualRealityViewNode()const;
 
+  /// Get VR home widget
   Q_INVOKABLE qMRMLVirtualRealityHomeWidget* vrHomeWidget()const;
 
   /// Get a reference to the associated vtkRenderer
@@ -124,6 +125,8 @@ public:
   Q_INVOKABLE void setGestureButtonToNone();
   ///@}
 
+  /// Register VR module. A button will be added in the modules section of the VR home
+  /// widget with the provided icon. When clicked, the given widget will be shown
   void registerModule(QWidget* widget, QIcon& icon);
 
 signals:
