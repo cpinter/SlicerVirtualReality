@@ -67,6 +67,12 @@
 #include <vtkMRMLVirtualRealityViewDisplayableManagerFactory.h>
 
 #if Slicer_VERSION_MAJOR >= 5 || Slicer_VERSION_MAJOR == 4 && Slicer_VERSION_MINOR >= 11
+#include <vtkMRMLThreeDViewInteractorStyle.h>
+#else
+#include <vtkThreeDViewInteractorStyle.h>
+#endif
+
+#if Slicer_VERSION_MAJOR >= 5 || Slicer_VERSION_MAJOR == 4 && Slicer_VERSION_MINOR >= 11
   #include <vtkMRMLThreeDViewInteractorStyle.h>
 #else
   #include <vtkThreeDViewInteractorStyle.h>
