@@ -169,6 +169,7 @@ qMRMLVirtualRealityViewPrivate::qMRMLVirtualRealityViewPrivate(qMRMLVirtualReali
 {
   this->MRMLVirtualRealityViewNode = nullptr;
   this->HomeWidget = new qMRMLVirtualRealityHomeWidget(q_ptr);
+  this->DataModuleWidget = new qMRMLVirtualRealityDataModuleWidget;
 }
 
 //---------------------------------------------------------------------------

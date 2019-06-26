@@ -19,8 +19,8 @@
 
 ==============================================================================*/
 
-#ifndef __qMRMLVirtualRealityHomeWidget_h
-#define __qMRMLVirtualRealityHomeWidget_h
+#ifndef __qMRMLVirtualRealityDataModuleWidget_h
+#define __qMRMLVirtualRealityDataModuleWidget_h
 
 // VirtualReality Widgets includes
 #include "qSlicerVirtualRealityModuleWidgetsExport.h"
@@ -32,15 +32,15 @@
 #include <ctkPimpl.h>
 #include <ctkVTKObject.h>
 
-// Qt includes 
-#include <QIcon>
-#include <QPushButton>
+// MRML includes
+#include "qMRMLSubjectHierarchyTreeView.h"
+#include "qMRMLSubjectHierarchyModel.h"
 
 class vtkMRMLVirtualRealityViewNode;
-class qMRMLVirtualRealityHomeWidgetPrivate;
+class qMRMLVirtualRealityDataModuleWidgetPrivate;
 
 /// \ingroup SlicerVirtualReality_Widgets
-class Q_SLICER_QTMODULES_VIRTUALREALITY_WIDGETS_EXPORT qMRMLVirtualRealityHomeWidget : public qMRMLWidget
+class Q_SLICER_QTMODULES_VIRTUALREALITY_WIDGETS_EXPORT qMRMLVirtualRealityDataModuleWidget : public qMRMLWidget
 {
   Q_OBJECT
   QVTK_OBJECT
@@ -48,43 +48,29 @@ class Q_SLICER_QTMODULES_VIRTUALREALITY_WIDGETS_EXPORT qMRMLVirtualRealityHomeWi
 public:
   typedef qMRMLWidget Superclass;
   /// Constructor
-  explicit qMRMLVirtualRealityHomeWidget(QWidget* parent = nullptr);
+  explicit qMRMLVirtualRealityDataModuleWidget(QWidget* parent = nullptr);
   /// Destructor
-  ~qMRMLVirtualRealityHomeWidget() override;
+  ~qMRMLVirtualRealityDataModuleWidget() override;
 
   /// Get virtual reality view MRML node
   Q_INVOKABLE vtkMRMLVirtualRealityViewNode* virtualRealityViewNode()const;
   Q_INVOKABLE QString virtualRealityViewNodeID()const;
 
-public slots:
-  /// Set virtual reality view MRML node
-  void setVirtualRealityViewNode(vtkMRMLVirtualRealityViewNode* node);
-
-  void onMotionSensitivityChanged(double);
-  void onFlySpeedChanged(double);
-  void onMagnification001xPressed();
-  void onMagnification01xPressed();
-  void onMagnification1xPressed();
-  void onMagnification10xPressed();
-  void onMagnification100xPressed();
-  //void updateViewFromReferenceViewCamera();
-  //void setMagnificationLock(bool);
-
-  void addModuleButton(QWidget* moduleWidget, QIcon& icon);
-  void onModuleButtonPressed();
-  void onBackButtonPressed();
-  void registerDataModule();
+  /// Get subject hierarchy tree view 
+  Q_INVOKABLE qMRMLSubjectHierarchyTreeView* treeView();
   
+public slots:
+
 protected slots:
   /// Update widgets from the MRML node
   void updateWidgetFromMRML();
 
 protected:
-  QScopedPointer<qMRMLVirtualRealityHomeWidgetPrivate> d_ptr;
+  QScopedPointer<qMRMLVirtualRealityDataModuleWidgetPrivate> d_ptr;
 
 private:
-  Q_DECLARE_PRIVATE(qMRMLVirtualRealityHomeWidget);
-  Q_DISABLE_COPY(qMRMLVirtualRealityHomeWidget);
+  Q_DECLARE_PRIVATE(qMRMLVirtualRealityDataModuleWidget);
+  Q_DISABLE_COPY(qMRMLVirtualRealityDataModuleWidget);
 };
 
 #endif
