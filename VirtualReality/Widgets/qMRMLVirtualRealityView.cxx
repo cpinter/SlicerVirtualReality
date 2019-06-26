@@ -111,6 +111,7 @@ qMRMLVirtualRealityViewPrivate::qMRMLVirtualRealityViewPrivate(qMRMLVirtualReali
 {
   this->MRMLVirtualRealityViewNode = nullptr;
   this->HomeWidget = new qMRMLVirtualRealityHomeWidget(q_ptr);
+  this->DataModuleWidget = new qMRMLVirtualRealityDataModuleWidget;
 }
 
 //---------------------------------------------------------------------------
@@ -685,7 +686,8 @@ qMRMLVirtualRealityView::~qMRMLVirtualRealityView()
 void qMRMLVirtualRealityView::registerModule(QWidget* widget, QIcon& icon) 
 {
   Q_D(qMRMLVirtualRealityView);
-  d->HomeWidget->addModuleButton(widget, icon);
+
+  d->HomeWidget->addModuleButton(widget, icon); 
 }  
 
 //------------------------------------------------------------------------------
