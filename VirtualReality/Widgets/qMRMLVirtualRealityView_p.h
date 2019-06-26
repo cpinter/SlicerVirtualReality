@@ -42,6 +42,7 @@
 
 // VirtualReality Widgets includes
 #include "qMRMLVirtualRealityHomeWidget.h"
+#include "qMRMLVirtualRealityDataModuleWidget.h"
 
 // qMRML includes
 #include "qMRMLVirtualRealityView.h"
@@ -120,6 +121,7 @@ protected:
   QTimer VirtualRealityLoopTimer;
 
   qMRMLVirtualRealityHomeWidget* HomeWidget;
+  qMRMLVirtualRealityDataModuleWidget* DataModuleWidget;
 };
 
 #endif
