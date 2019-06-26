@@ -21,11 +21,11 @@
 
 // VirtualReality Widgets includes
 #include "qMRMLVirtualRealityHomeWidget.h"
-
 #include "ui_qMRMLVirtualRealityHomeWidget.h"
 
 // VirtualReality MRML includes
 #include "vtkMRMLVirtualRealityViewNode.h"
+#include "qMRMLVirtualRealityDataModuleWidget.h"
 
 // VTK includes
 #include <vtkWeakPointer.h>
@@ -53,6 +53,7 @@ public:
 public:
   /// Virtual reality view MRML node
   vtkWeakPointer<vtkMRMLVirtualRealityViewNode> VirtualRealityViewNode;
+  qMRMLVirtualRealityDataModuleWidget* DataModuleWidget;
 };
 
 //-----------------------------------------------------------------------------
@@ -60,6 +61,7 @@ qMRMLVirtualRealityHomeWidgetPrivate::qMRMLVirtualRealityHomeWidgetPrivate(qMRML
   : q_ptr(&object)
 {
   this->VirtualRealityViewNode = nullptr;
+  this->DataModuleWidget = new qMRMLVirtualRealityDataModuleWidget;
 }
 
 //-----------------------------------------------------------------------------
@@ -92,6 +94,7 @@ void qMRMLVirtualRealityHomeWidgetPrivate::init()
 // qMRMLVirtualRealityHomeWidget methods
 
 //-----------------------------------------------------------------------------
+
 qMRMLVirtualRealityHomeWidget::qMRMLVirtualRealityHomeWidget(QWidget* _parent)
   : qMRMLWidget(_parent)
   , d_ptr(new qMRMLVirtualRealityHomeWidgetPrivate(*this))
@@ -110,6 +113,13 @@ vtkMRMLVirtualRealityViewNode* qMRMLVirtualRealityHomeWidget::virtualRealityView
 {
   Q_D(const qMRMLVirtualRealityHomeWidget);
   return d->VirtualRealityViewNode;
+}
+
+//-----------------------------------------------------------------------------
+QString qMRMLVirtualRealityHomeWidget::virtualRealityViewNodeID()const
+{
+  Q_D(const qMRMLVirtualRealityHomeWidget);
+  return (d->VirtualRealityViewNode.GetPointer() ? d->VirtualRealityViewNode->GetID() : QString());
 }
 
 //-----------------------------------------------------------------------------
@@ -174,10 +184,13 @@ void  qMRMLVirtualRealityHomeWidget::onBackButtonPressed()
 }
 
 //-----------------------------------------------------------------------------
-QString qMRMLVirtualRealityHomeWidget::virtualRealityViewNodeID()const
+void qMRMLVirtualRealityHomeWidget::registerDataModule()
 {
-  Q_D(const qMRMLVirtualRealityHomeWidget);
-  return (d->VirtualRealityViewNode.GetPointer() ? d->VirtualRealityViewNode->GetID() : QString());
+  Q_D(qMRMLVirtualRealityHomeWidget);
+  QIcon dataIcon(QPixmap(":/Icons/SubjectHierarchy.png"));
+  addModuleButton(d->DataModuleWidget, dataIcon);
+  d->DataModuleWidget->setMRMLScene(this->mrmlScene());
+  d->DataModuleWidget->treeView()->setColumnHidden(d->DataModuleWidget->treeView()->model()->idColumn(),true);
 }
 
 //-----------------------------------------------------------------------------
