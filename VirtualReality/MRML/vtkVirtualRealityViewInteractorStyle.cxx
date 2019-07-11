@@ -29,7 +29,13 @@
 #include "vtkMRMLDisplayNode.h"
 #include "vtkMRMLInteractionEventData.h"
 #include "vtkMRMLLinearTransformNode.h"
+#include "vtkMRMLInteractionEventData.h"
+#include "vtkMRMLModelDisplayableManager.h"
 #include "vtkMRMLScene.h"
+#include "vtkMRMLSegmentationNode.h"
+#include "vtkMRMLSegmentationDisplayNode.h"
+#include "vtkMRMLVolumeNode.h"
+#include "vtkMRMLVolumeRenderingDisplayNode.h"
 
 // VTK includes
 #include <vtkCamera.h>
