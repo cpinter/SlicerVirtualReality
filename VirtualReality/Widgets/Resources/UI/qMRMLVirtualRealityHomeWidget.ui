@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>532</width>
-    <height>262</height>
+    <height>263</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -48,26 +48,26 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="ctkSliderWidget" name="FlySpeedSliderWidget" native="true">
-        <property name="decimals" stdset="0">
+       <widget class="ctkSliderWidget" name="FlySpeedSliderWidget">
+        <property name="decimals">
          <number>1</number>
         </property>
-        <property name="singleStep" stdset="0">
+        <property name="singleStep">
          <double>0.500000000000000</double>
         </property>
-        <property name="pageStep" stdset="0">
+        <property name="pageStep">
          <double>2.000000000000000</double>
         </property>
-        <property name="minimum" stdset="0">
+        <property name="minimum">
          <double>0.100000000000000</double>
         </property>
-        <property name="maximum" stdset="0">
+        <property name="maximum">
          <double>10.000000000000000</double>
         </property>
-        <property name="value" stdset="0">
+        <property name="value">
          <double>1.660000000000000</double>
         </property>
-        <property name="suffix" stdset="0">
+        <property name="suffix">
          <string>m/s</string>
         </property>
        </widget>
@@ -145,33 +145,22 @@
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="ctkSliderWidget" name="MotionSensitivitySliderWidget" native="true">
-        <property name="decimals" stdset="0">
+       <widget class="ctkSliderWidget" name="MotionSensitivitySliderWidget">
+        <property name="decimals">
          <number>0</number>
         </property>
-        <property name="maximum" stdset="0">
+        <property name="maximum">
          <double>100.000000000000000</double>
         </property>
-        <property name="value" stdset="0">
+        <property name="value">
          <double>50.000000000000000</double>
         </property>
-        <property name="suffix" stdset="0">
+        <property name="suffix">
          <string>%</string>
         </property>
        </widget>
       </item>
      </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QFrame" name="ModuleWidgetFrame">
-     <property name="frameShape">
-      <enum>QFrame::NoFrame</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
-     </property>
-     <layout class="QFormLayout" name="formLayout_3"/>
     </widget>
    </item>
    <item>
@@ -184,6 +173,19 @@
        <layout class="QHBoxLayout" name="ModulesGroupBoxLayout"/>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="ModuleWidgetFrame">
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <property name="midLineWidth">
+      <number>0</number>
+     </property>
     </widget>
    </item>
   </layout>
