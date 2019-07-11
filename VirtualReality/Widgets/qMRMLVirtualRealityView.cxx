@@ -108,6 +108,8 @@ namespace
 qMRMLVirtualRealityViewPrivate::qMRMLVirtualRealityViewPrivate(qMRMLVirtualRealityView& object)
   : q_ptr(&object)
   , CamerasLogic(nullptr)
+  , MRMLVirtualRealityViewNode(nullptr)
+  , HomeWidget(nullptr)
 {
   this->MRMLVirtualRealityViewNode = nullptr;
   this->HomeWidget = new qMRMLVirtualRealityHomeWidget(q_ptr);
@@ -123,6 +125,10 @@ qMRMLVirtualRealityViewPrivate::~qMRMLVirtualRealityViewPrivate()
 void qMRMLVirtualRealityViewPrivate::init()
 {
   QObject::connect(&this->VirtualRealityLoopTimer, SIGNAL(timeout()), this, SLOT(doOpenVirtualReality()));
+
+  // Setup VR home widget
+  this->HomeWidget = new qMRMLVirtualRealityHomeWidget(q_ptr);
+  QObject::connect(this, SIGNAL(mrmlSceneChanged(vtkMRMLScene*)), this->HomeWidget, SLOT(setMRMLScene(vtkMRMLScene*)));
 }
 
 //----------------------------------------------------------------------------
