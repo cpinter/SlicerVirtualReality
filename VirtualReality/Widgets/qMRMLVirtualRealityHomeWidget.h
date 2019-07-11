@@ -54,7 +54,16 @@ public:
 
   /// Get virtual reality view MRML node
   Q_INVOKABLE vtkMRMLVirtualRealityViewNode* virtualRealityViewNode()const;
+  /// Get virtual reality view MRML node ID
   Q_INVOKABLE QString virtualRealityViewNodeID()const;
+
+  /// Add new button for a given VR module widget
+  /// \param moduleWidget The widget that appears in place of the home widget when its button is pressed
+  /// \param icon The icon that appears on the button in the home widget
+  Q_INVOKABLE void addModuleButton(QWidget* moduleWidget, QIcon& icon);
+
+  /// Register default modules: Data
+  Q_INVOKABLE void registerDefaultModules();
 
 public slots:
   /// Set virtual reality view MRML node
@@ -70,10 +79,8 @@ public slots:
   //void updateViewFromReferenceViewCamera();
   //void setMagnificationLock(bool);
 
-  void addModuleButton(QWidget* moduleWidget, QIcon& icon);
-  void onModuleButtonPressed();
-  void onBackButtonPressed();
-  void registerDataModule();
+  void onModuleButtonClicked();
+  void onBackButtonClicked();
   
 protected slots:
   /// Update widgets from the MRML node

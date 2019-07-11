@@ -22,10 +22,10 @@
 // VirtualReality Widgets includes
 #include "qMRMLVirtualRealityHomeWidget.h"
 #include "ui_qMRMLVirtualRealityHomeWidget.h"
+#include "qMRMLVirtualRealityDataModuleWidget.h"
 
 // VirtualReality MRML includes
 #include "vtkMRMLVirtualRealityViewNode.h"
-#include "qMRMLVirtualRealityDataModuleWidget.h"
 
 // VTK includes
 #include <vtkWeakPointer.h>
@@ -48,6 +48,7 @@ public:
   
   void init();
 
+  /// Association between VR module buttons and the corresponding widgets
   QMap<QPushButton*, QWidget*> ModuleWidgetsMap;
 
 public:
@@ -61,12 +62,13 @@ qMRMLVirtualRealityHomeWidgetPrivate::qMRMLVirtualRealityHomeWidgetPrivate(qMRML
   : q_ptr(&object)
 {
   this->VirtualRealityViewNode = nullptr;
-  this->DataModuleWidget = new qMRMLVirtualRealityDataModuleWidget;
+  this->DataModuleWidget = nullptr;
 }
 
 //-----------------------------------------------------------------------------
 qMRMLVirtualRealityHomeWidgetPrivate::~qMRMLVirtualRealityHomeWidgetPrivate()
 {
+  this->VirtualRealityViewNode = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -87,7 +89,15 @@ void qMRMLVirtualRealityHomeWidgetPrivate::init()
   QObject::connect(this->SyncViewToReferenceViewButton, SIGNAL(clicked()), q, SLOT(updateViewFromReferenceViewCamera()));
 
   //QObject::connect(this->LockMagnificationCheckBox, SIGNAL(toggled(bool)), q, SLOT(setMagnificationLock(bool)));
-  //TODO: Magnification lock of view node not implemented yet 
+  //TODO: Magnification lock of view node not implemented yet
+
+  // Hide module widget frame. It appears with the module when a module button is clicked
+  this->ModuleWidgetFrame->setVisible(false);
+  // Setup module widget frame layout
+  QVBoxLayout* moduleWidgetFrameLayout = new QVBoxLayout(this->ModuleWidgetFrame);
+
+  // Register default VR modules
+  q->registerDefaultModules();
 }
 
 //-----------------------------------------------------------------------------
@@ -120,77 +130,6 @@ QString qMRMLVirtualRealityHomeWidget::virtualRealityViewNodeID()const
 {
   Q_D(const qMRMLVirtualRealityHomeWidget);
   return (d->VirtualRealityViewNode.GetPointer() ? d->VirtualRealityViewNode->GetID() : QString());
-}
-
-//-----------------------------------------------------------------------------
-void qMRMLVirtualRealityHomeWidget::addModuleButton(QWidget* moduleWidget, QIcon& icon)
-{
-  Q_D(qMRMLVirtualRealityHomeWidget);
-
-  if (!moduleWidget)
-  {
-    qCritical() << Q_FUNC_INFO << "Failed: widget is null";
-    return;
-  }
-
-  QPushButton* moduleButton = new QPushButton(d->ModulesGroupBox);  
-  d->ModulesGroupBoxLayout->addWidget(moduleButton);
-  moduleButton->setIcon(icon);
-  
-  moduleWidget->setParent(d->ModuleWidgetFrame);
-  d->ModuleWidgetsMap[moduleButton] = moduleWidget;
-
-  QObject::connect(moduleButton, SIGNAL(clicked()), this, SLOT(onModuleButtonPressed()));
-  QObject::connect(d->backButton, SIGNAL(clicked()), this, SLOT(onBackButtonPressed()));
- 
-  moduleButton->setVisible(true);
-  moduleWidget->setVisible(false);
-  d->backButton->setVisible(false);
-}
-
-//-----------------------------------------------------------------------------
-void qMRMLVirtualRealityHomeWidget::onModuleButtonPressed()
-{
-  Q_D(qMRMLVirtualRealityHomeWidget);
-
-  QPushButton* moduleButton = qobject_cast<QPushButton*>(sender());
-  
-  if (!moduleButton)
-  {
-    qCritical() << Q_FUNC_INFO << "Failed: moduleButton is null";
-    return;
-  }
-
-  d->HomeWidgetFrame->setVisible(false);
-  d->ModulesGroupBox->setVisible(false);
-  d->ModuleWidgetsMap[moduleButton]->setVisible(true);
-  d->backButton->setVisible(true);
-}
-
-//-----------------------------------------------------------------------------
-void  qMRMLVirtualRealityHomeWidget::onBackButtonPressed()
-{
-  Q_D(qMRMLVirtualRealityHomeWidget);
-  d->HomeWidgetFrame->setVisible(true);
-  d->ModulesGroupBox->setVisible(true); 
-  d->backButton->setVisible(false);
-
-  QMap<QPushButton*, QWidget*>::const_iterator iteratorForMap; 
-  for (iteratorForMap = d->ModuleWidgetsMap.constBegin(); iteratorForMap != d->ModuleWidgetsMap.constEnd(); ++iteratorForMap) 
-  {
-    iteratorForMap.value()->setVisible(false); 
-  }
-
-}
-
-//-----------------------------------------------------------------------------
-void qMRMLVirtualRealityHomeWidget::registerDataModule()
-{
-  Q_D(qMRMLVirtualRealityHomeWidget);
-  QIcon dataIcon(QPixmap(":/Icons/SubjectHierarchy.png"));
-  addModuleButton(d->DataModuleWidget, dataIcon);
-  d->DataModuleWidget->setMRMLScene(this->mrmlScene());
-  d->DataModuleWidget->treeView()->setColumnHidden(d->DataModuleWidget->treeView()->model()->idColumn(),true);
 }
 
 //-----------------------------------------------------------------------------
@@ -374,7 +313,95 @@ void qMRMLVirtualRealityHomeWidget::setMagnificationLock(bool active)
    qCritical() << Q_FUNC_INFO << " Failed: view node is null";
    return;
   }
-   vrViewNode->????(active);  //TODO: Implement magnification lock for view node
-
+  
+  vrViewNode->????(active);  //TODO: Implement magnification lock for view node
 }
 */
+
+//-----------------------------------------------------------------------------
+void qMRMLVirtualRealityHomeWidget::addModuleButton(QWidget* moduleWidget, QIcon& icon)
+{
+  Q_D(qMRMLVirtualRealityHomeWidget);
+
+  if (!moduleWidget)
+  {
+    qCritical() << Q_FUNC_INFO << ": Invalid module widget given";
+    return;
+  }
+
+  // Create button for the new module
+  QPushButton* moduleButton = new QPushButton(d->ModulesGroupBox);
+  d->ModulesGroupBoxLayout->addWidget(moduleButton);
+  moduleButton->setIcon(icon);
+
+  // Setup module widget within home widget
+  moduleWidget->setParent(d->ModuleWidgetFrame);
+  moduleWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+  moduleWidget->setVisible(false);
+  d->ModuleWidgetFrame->layout()->addWidget(moduleWidget);
+  d->ModuleWidgetsMap[moduleButton] = moduleWidget;
+
+  // Handle scene if a MRML widget is given
+  qMRMLWidget* moduleMrmlWidget = qobject_cast<qMRMLWidget*>(moduleWidget);
+  if (moduleMrmlWidget)
+  {
+    moduleMrmlWidget->setMRMLScene(this->mrmlScene());
+    QObject::connect(this, SIGNAL(mrmlSceneChanged(vtkMRMLScene*)), moduleWidget, SLOT(setMRMLScene(vtkMRMLScene*)));
+  }
+
+  QObject::connect(moduleButton, SIGNAL(clicked()), this, SLOT(onModuleButtonClicked()));
+  QObject::connect(d->backButton, SIGNAL(clicked()), this, SLOT(onBackButtonClicked()));
+
+  moduleButton->setVisible(true);
+  d->backButton->setVisible(false);
+}
+
+//-----------------------------------------------------------------------------
+void qMRMLVirtualRealityHomeWidget::onModuleButtonClicked()
+{
+  Q_D(qMRMLVirtualRealityHomeWidget);
+
+  QPushButton* moduleButton = qobject_cast<QPushButton*>(sender());
+  if (!moduleButton)
+  {
+    qCritical() << Q_FUNC_INFO << ": Failed to access clicked button";
+    return;
+  }
+
+  d->HomeWidgetFrame->setVisible(false);
+  d->ModulesGroupBox->setVisible(false);
+
+  d->ModuleWidgetFrame->setVisible(true);
+  d->ModuleWidgetsMap[moduleButton]->setVisible(true);
+  d->backButton->setVisible(true);
+}
+
+//-----------------------------------------------------------------------------
+void  qMRMLVirtualRealityHomeWidget::onBackButtonClicked()
+{
+  Q_D(qMRMLVirtualRealityHomeWidget);
+
+  QMap<QPushButton*, QWidget*>::const_iterator buttonIt;
+  for (buttonIt = d->ModuleWidgetsMap.constBegin(); buttonIt != d->ModuleWidgetsMap.constEnd(); ++buttonIt)
+  {
+    buttonIt.value()->setVisible(false);
+  }
+  d->ModuleWidgetFrame->setVisible(false);
+  d->backButton->setVisible(false);
+
+  d->HomeWidgetFrame->setVisible(true);
+  d->ModulesGroupBox->setVisible(true);
+}
+
+//-----------------------------------------------------------------------------
+void qMRMLVirtualRealityHomeWidget::registerDefaultModules()
+{
+  Q_D(qMRMLVirtualRealityHomeWidget);
+
+  d->DataModuleWidget = new qMRMLVirtualRealityDataModuleWidget(this);
+  d->DataModuleWidget->setMRMLScene(this->mrmlScene());
+
+  QIcon dataIcon(QPixmap(":/Icons/SubjectHierarchy.png"));
+
+  this->addModuleButton(d->DataModuleWidget, dataIcon);
+}

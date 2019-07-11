@@ -42,10 +42,6 @@ public:
   virtual ~qMRMLVirtualRealityDataModuleWidgetPrivate();
 
   void init();
-
-public:
-  /// Virtual reality view MRML node
-  vtkWeakPointer<vtkMRMLVirtualRealityViewNode> VirtualRealityViewNode;
 };
 
 //-----------------------------------------------------------------------------
@@ -64,6 +60,9 @@ void qMRMLVirtualRealityDataModuleWidgetPrivate::init()
 {
   Q_Q(qMRMLVirtualRealityDataModuleWidget);
   this->setupUi(q);
+
+  // Customize widget contents
+  this->SubjectHierarchyTreeView->setColumnHidden(this->SubjectHierarchyTreeView->model()->idColumn(), true);
 }
 
 //-----------------------------------------------------------------------------
@@ -85,28 +84,7 @@ qMRMLVirtualRealityDataModuleWidget::~qMRMLVirtualRealityDataModuleWidget()
 = default;
 
 //-----------------------------------------------------------------------------
-vtkMRMLVirtualRealityViewNode* qMRMLVirtualRealityDataModuleWidget::virtualRealityViewNode() const
-{
-  Q_D(const qMRMLVirtualRealityDataModuleWidget);
-  return d->VirtualRealityViewNode;
-}
-
-//-----------------------------------------------------------------------------
-QString qMRMLVirtualRealityDataModuleWidget::virtualRealityViewNodeID()const
-{
-  Q_D(const qMRMLVirtualRealityDataModuleWidget);
-  return (d->VirtualRealityViewNode.GetPointer() ? d->VirtualRealityViewNode->GetID() : QString());
-}
-
-//-----------------------------------------------------------------------------
 void qMRMLVirtualRealityDataModuleWidget::updateWidgetFromMRML()
 {
   //Q_D(qMRMLVirtualRealityDataModuleWidget);
-}
-
-//-----------------------------------------------------------------------------
-qMRMLSubjectHierarchyTreeView* qMRMLVirtualRealityDataModuleWidget::treeView()
-{
-  Q_D(qMRMLVirtualRealityDataModuleWidget);
-  return d->SubjectHierarchyTreeView;
 }
