@@ -181,7 +181,7 @@ QString qMRMLVirtualRealityHomeWidget::virtualRealityViewNodeID()const
 }
 
 //-----------------------------------------------------------------------------
-void qMRMLVirtualRealityHomeWidget::setVirtualRealityViewNode(vtkMRMLVirtualRealityViewNode * node)
+void qMRMLVirtualRealityHomeWidget::setVirtualRealityViewNode(vtkMRMLVirtualRealityViewNode* node)
 {
   Q_D(qMRMLVirtualRealityHomeWidget);
 
