@@ -36,7 +36,6 @@
 #include "qMRMLSubjectHierarchyTreeView.h"
 #include "qMRMLSubjectHierarchyModel.h"
 
-class vtkMRMLVirtualRealityViewNode;
 class qMRMLVirtualRealityDataModuleWidgetPrivate;
 
 /// \ingroup SlicerVirtualReality_Widgets
@@ -51,13 +50,6 @@ public:
   explicit qMRMLVirtualRealityDataModuleWidget(QWidget* parent = nullptr);
   /// Destructor
   ~qMRMLVirtualRealityDataModuleWidget() override;
-
-  /// Get virtual reality view MRML node
-  Q_INVOKABLE vtkMRMLVirtualRealityViewNode* virtualRealityViewNode()const;
-  Q_INVOKABLE QString virtualRealityViewNodeID()const;
-
-  /// Get subject hierarchy tree view 
-  Q_INVOKABLE qMRMLSubjectHierarchyTreeView* treeView();
   
 public slots:
 
