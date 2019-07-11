@@ -118,7 +118,7 @@ namespace
 //---------------------------------------------------------------------------
 qMRMLVirtualRealityViewPrivate::qMRMLVirtualRealityViewPrivate(qMRMLVirtualRealityView& object)
   : q_ptr(&object)
-  , CamerasLogic(NULL)
+  , CamerasLogic(nullptr)
 {
   this->MRMLVirtualRealityViewNode = 0;
   this->HomeWidget = new qMRMLVirtualRealityHomeWidget(q_ptr);
@@ -190,6 +190,14 @@ void qMRMLVirtualRealityViewPrivate::createRenderWindow()
   vtkMRMLVirtualRealityViewDisplayableManagerFactory* factory
     = vtkMRMLVirtualRealityViewDisplayableManagerFactory::GetInstance();
 
+  vtkSlicerApplicationLogic* appLogic = qSlicerApplication::application()->applicationLogic();
+  if (!appLogic)
+  {
+    qCritical() << Q_FUNC_INFO << ": Failed to access application logic";
+    return;
+  }
+  factory->SetMRMLApplicationLogic(appLogic);
+
   QStringList displayableManagers;
   displayableManagers //<< "vtkMRMLCameraDisplayableManager"
   //<< "vtkMRMLViewDisplayableManager"
@@ -216,7 +224,7 @@ void qMRMLVirtualRealityViewPrivate::createRenderWindow()
   this->DisplayableManagerGroup = vtkSmartPointer<vtkMRMLDisplayableManagerGroup>::Take(
                                     factory->InstantiateDisplayableManagers(q->renderer()));
   this->DisplayableManagerGroup->SetMRMLDisplayableNode(this->MRMLVirtualRealityViewNode);
-  this->InteractorStyle->SetDisplayableManagerGroup(this->DisplayableManagerGroup);
+  this->InteractorStyle->SetDisplayableManagers(this->DisplayableManagerGroup);
 
   qDebug() << "this->DisplayableManagerGroup" << this->DisplayableManagerGroup->GetDisplayableManagerCount();
 
@@ -263,7 +271,7 @@ void qMRMLVirtualRealityViewPrivate::createRenderWindow()
   this->RenderWindow->Initialize();
   if (!this->RenderWindow->GetHMD())
   {
-    qWarning() << "Failed to initialize OpenVR RenderWindow";
+    qWarning() << Q_FUNC_INFO << ": Failed to initialize OpenVR RenderWindow";
     return;
   }
 }
@@ -276,14 +284,14 @@ void qMRMLVirtualRealityViewPrivate::destroyRenderWindow()
   // Must break the connection between interactor and render window,
   // otherwise they would circularly refer to each other and would not
   // be deleted.
-  this->Interactor->SetRenderWindow(NULL);
-  this->Interactor = NULL;
-  this->InteractorStyle = NULL;
-  this->DisplayableManagerGroup = NULL;
-  this->Renderer = NULL;
-  this->Camera = NULL;
-  this->Lights = NULL;
-  this->RenderWindow = NULL;
+  this->Interactor->SetRenderWindow(nullptr);
+  this->Interactor = nullptr;
+  this->InteractorStyle = nullptr;
+  this->DisplayableManagerGroup = nullptr;
+  this->Renderer = nullptr;
+  this->Camera = nullptr;
+  this->Lights = nullptr;
+  this->RenderWindow = nullptr;
 }
 
 // --------------------------------------------------------------------------
@@ -292,7 +300,7 @@ void qMRMLVirtualRealityViewPrivate::updateWidgetFromMRML()
   Q_Q(qMRMLVirtualRealityView);
   if (!this->MRMLVirtualRealityViewNode || !this->MRMLVirtualRealityViewNode->GetVisibility())
   {
-    if (this->RenderWindow != NULL)
+    if (this->RenderWindow != nullptr)
     {
       this->destroyRenderWindow();
     }
@@ -505,9 +513,9 @@ void qMRMLVirtualRealityViewPrivate::updateTransformNodeWithControllerPose(vtkEv
 {
   vtkMRMLLinearTransformNode* node = this->MRMLVirtualRealityViewNode->GetControllerTransformNode(device);
 
-  if (node == NULL)
+  if (node == nullptr)
   {
-    qCritical() << "Unable to retrieve linear transform node for device: " << (int)device;
+    qCritical() << Q_FUNC_INFO << ": Unable to retrieve linear transform node for device: " << (int)device;
     return;
   }
 
@@ -549,9 +557,9 @@ void qMRMLVirtualRealityViewPrivate::updateTransformNodeWithHMDPose()
 {
   vtkMRMLLinearTransformNode* node = this->MRMLVirtualRealityViewNode->GetHMDTransformNode();
 
-  if (node == NULL)
+  if (node == nullptr)
   {
-    qCritical() << "Unable to retrieve linear transform node for HMD";
+    qCritical() << Q_FUNC_INFO << ": Unable to retrieve linear transform node for HMD";
     return;
   }
 
@@ -596,7 +604,7 @@ void qMRMLVirtualRealityViewPrivate::updateTransformNodesWithTrackerPoses()
       node = vtkMRMLLinearTransformNode::SafeDownCast(this->MRMLVirtualRealityViewNode->GetScene()->AddNode(vtkMRMLLinearTransformNode::New()));
       if (node == nullptr)
       {
-        qCritical() << "Unable to add transform node to scene. Can't update VR tracker with ID: " << dev;
+        qCritical() << Q_FUNC_INFO << ": Unable to add transform node to scene. Can't update VR tracker with ID: " << dev;
         continue;
       }
       node->SetAttribute("VirtualReality.VRDeviceID", ss.str().c_str());
@@ -793,13 +801,13 @@ void qMRMLVirtualRealityView::updateViewFromReferenceViewCamera()
   vtkRenderer* ren = static_cast<vtkRenderer*>(d->RenderWindow->GetRenderers()->GetItemAsObject(0));
   if (!ren)
   {
-    qWarning() << Q_FUNC_INFO << "The renderer must be set prior to calling InitializeViewFromCamera";
+    qWarning() << Q_FUNC_INFO << ": The renderer must be set prior to calling InitializeViewFromCamera";
     return;
   }
   vtkOpenVRCamera* cam = vtkOpenVRCamera::SafeDownCast(ren->GetActiveCamera());
   if (!cam)
   {
-    qWarning() << Q_FUNC_INFO << "The renderer's active camera must be set prior to calling InitializeViewFromCamera";
+    qWarning() << Q_FUNC_INFO << ": The renderer's active camera must be set prior to calling InitializeViewFromCamera";
     return;
   }
 
