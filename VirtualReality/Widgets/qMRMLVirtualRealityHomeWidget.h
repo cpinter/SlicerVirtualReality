@@ -38,6 +38,7 @@
 
 class vtkMRMLVirtualRealityViewNode;
 class qMRMLVirtualRealityHomeWidgetPrivate;
+class vtkMRMLSegmentEditorNode;
 
 /// \ingroup SlicerVirtualReality_Widgets
 class Q_SLICER_QTMODULES_VIRTUALREALITY_WIDGETS_EXPORT qMRMLVirtualRealityHomeWidget : public qMRMLWidget
@@ -62,8 +63,11 @@ public:
   /// \param icon The icon that appears on the button in the home widget
   Q_INVOKABLE void addModuleButton(QWidget* moduleWidget, QIcon& icon);
 
-  /// Register default modules: Data
-  Q_INVOKABLE void registerDefaultModules();
+  /// Register default modules: Data, Segment Editor
+  Q_INVOKABLE void registerDefaultModules(); 
+  
+  /// Set the segment editor node for the segment editor widget
+  Q_INVOKABLE void setMRMLSegmentEditorNode(vtkMRMLSegmentEditorNode* newSegmentEditorNode);
 
 public slots:
   /// Set virtual reality view MRML node

@@ -23,9 +23,13 @@
 #include "qMRMLVirtualRealityHomeWidget.h"
 #include "ui_qMRMLVirtualRealityHomeWidget.h"
 #include "qMRMLVirtualRealityDataModuleWidget.h"
+#include "qMRMLVirtualRealitySegmentEditorWidget.h"
 
 // VirtualReality MRML includes
 #include "vtkMRMLVirtualRealityViewNode.h"
+
+// Segmentations includes
+#include "vtkMRMLSegmentEditorNode.h"
 
 // VTK includes
 #include <vtkWeakPointer.h>
@@ -55,6 +59,7 @@ public:
   /// Virtual reality view MRML node
   vtkWeakPointer<vtkMRMLVirtualRealityViewNode> VirtualRealityViewNode;
   qMRMLVirtualRealityDataModuleWidget* DataModuleWidget;
+  qMRMLVirtualRealitySegmentEditorWidget* SegmentEditorWidget;
 };
 
 //-----------------------------------------------------------------------------
@@ -63,6 +68,7 @@ qMRMLVirtualRealityHomeWidgetPrivate::qMRMLVirtualRealityHomeWidgetPrivate(qMRML
 {
   this->VirtualRealityViewNode = nullptr;
   this->DataModuleWidget = nullptr;
+  this->SegmentEditorWidget = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -400,8 +406,18 @@ void qMRMLVirtualRealityHomeWidget::registerDefaultModules()
 
   d->DataModuleWidget = new qMRMLVirtualRealityDataModuleWidget(this);
   d->DataModuleWidget->setMRMLScene(this->mrmlScene());
+  d->SegmentEditorWidget = new qMRMLVirtualRealitySegmentEditorWidget(this);
+  d->SegmentEditorWidget->setMRMLScene(this->mrmlScene());
 
   QIcon dataIcon(QPixmap(":/Icons/SubjectHierarchy.png"));
+  QIcon segmentEditorIcon(QPixmap(":/Icons/SegmentEditor.png"));
 
   this->addModuleButton(d->DataModuleWidget, dataIcon);
+  this->addModuleButton(d->SegmentEditorWidget, segmentEditorIcon);
+}
+
+void qMRMLVirtualRealityHomeWidget::setMRMLSegmentEditorNode(vtkMRMLSegmentEditorNode* newSegmentEditorNode)
+{
+  Q_D(qMRMLVirtualRealityHomeWidget);
+  d->SegmentEditorWidget->setMRMLSegmentEditorNode(newSegmentEditorNode);
 }
