@@ -19,26 +19,26 @@ set(${KIT}_SRCS
   qMRML${MODULE_NAME}View.h
   qMRML${MODULE_NAME}TransformWidget.cxx
   qMRML${MODULE_NAME}TransformWidget.h
-  qMRMLVirtualRealityHomeWidget.cxx
-  qMRMLVirtualRealityHomeWidget.h
-  qMRMLVirtualRealityDataModuleWidget.cxx
-  qMRMLVirtualRealityDataModuleWidget.h
-  qMRMLVirtualRealitySegmentEditorWidget.cxx
-  qMRMLVirtualRealitySegmentEditorWidget.h
+  qMRML${MODULE_NAME}HomeWidget.cxx
+  qMRML${MODULE_NAME}HomeWidget.h
+  qMRML${MODULE_NAME}DataModuleWidget.cxx
+  qMRML${MODULE_NAME}DataModuleWidget.h
+  qMRML${MODULE_NAME}SegmentEditorWidget.cxx
+  qMRML${MODULE_NAME}SegmentEditorWidget.h
   )
 
 set(${KIT}_MOC_SRCS
   qMRML${MODULE_NAME}View.h
   qMRML${MODULE_NAME}TransformWidget.h
   qMRML${MODULE_NAME}View_p.h
-  qMRMLVirtualRealityHomeWidget.h
-  qMRMLVirtualRealityDataModuleWidget.h
+  qMRML${MODULE_NAME}HomeWidget.h
+  qMRML${MODULE_NAME}DataModuleWidget.h
   qMRMLVirtualRealitySegmentEditorWidget.h 
   )
 
 set(${KIT}_UI_SRCS
-  Resources/UI/qMRMLVirtualRealityHomeWidget.ui
-  Resources/UI/qMRMLVirtualRealityDataModuleWidget.ui
+  Resources/UI/qMRML${MODULE_NAME}HomeWidget.ui
+  Resources/UI/qMRML${MODULE_NAME}DataModuleWidget.ui
   Resources/UI/qMRMLVirtualRealitySegmentEditorWidget.ui
   Resources/UI/qMRML${MODULE_NAME}TransformWidget.ui
   )

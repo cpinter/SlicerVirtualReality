@@ -90,6 +90,9 @@
 #include <vtkLightCollection.h>
 #include <vtkNew.h>
 #include <vtkOpenGLFramebufferObject.h>
+#include <vtkQWidgetRepresentation.h>
+#include <vtkQWidgetWidget.h>
+#include <vtkPlaneSource.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkRenderer.h>
 #include <vtkRendererCollection.h>
@@ -138,11 +141,13 @@ qMRMLVirtualRealityViewPrivate::~qMRMLVirtualRealityViewPrivate()
 //---------------------------------------------------------------------------
 void qMRMLVirtualRealityViewPrivate::init()
 {
+  Q_Q(qMRMLVirtualRealityView);
+
   QObject::connect(&this->VirtualRealityLoopTimer, SIGNAL(timeout()), this, SLOT(doOpenVirtualReality()));
 
   // Setup VR home widget
-  this->HomeWidget = new qMRMLVirtualRealityHomeWidget(q_ptr);
-  QObject::connect(this, SIGNAL(mrmlSceneChanged(vtkMRMLScene*)), this->HomeWidget, SLOT(setMRMLScene(vtkMRMLScene*)));
+  this->HomeWidget = new qMRMLVirtualRealityHomeWidget(q);
+  //QObject::connect(q, SIGNAL(mrmlSceneChanged(vtkMRMLScene*)), this->HomeWidget, SLOT(setMRMLScene(vtkMRMLScene*))); //TODO: VR view has no scene
 }
 
 //----------------------------------------------------------------------------
@@ -236,7 +241,7 @@ void qMRMLVirtualRealityViewPrivate::createRenderWindow()
   this->DisplayableManagerGroup->SetMRMLDisplayableNode(this->MRMLVirtualRealityViewNode);
   this->InteractorStyle->SetDisplayableManagers(this->DisplayableManagerGroup);
 
-  qDebug() << "this->DisplayableManagerGroup" << this->DisplayableManagerGroup->GetDisplayableManagerCount();
+  qDebug() << Q_FUNC_INFO << "Number of registered displayable managers in VR: " << this->DisplayableManagerGroup->GetDisplayableManagerCount();
 
   ///CONFIGURATION OF THE OPENVR ENVIRONEMENT
 
@@ -850,6 +855,7 @@ void qMRMLVirtualRealityView::updateViewFromReferenceViewCamera()
 }
 
 //------------------------------------------------------------------------------
+//TODO: Remove
 void qMRMLVirtualRealityView::setVirtualWidget(QWidget* menuWidget)
 {
   QPixmap menuTexture(menuWidget->size());
@@ -861,4 +867,51 @@ void qMRMLVirtualRealityView::setVirtualWidget(QWidget* menuWidget)
   {
     qCritical() << Q_FUNC_INFO << ": Error while saving menu texture";
   }
+}
+
+//------------------------------------------------------------------------------
+void qMRMLVirtualRealityView::showHomeWidget(vtkRenderer* renderer/*=nullptr*/)
+{
+  Q_D(qMRMLVirtualRealityView);
+
+  if (!renderer)
+  {
+    renderer = d->Renderer;
+  }
+
+  if (!d->VrInteractionWidget)
+  {
+    d->VrInteractionWidget = vtkSmartPointer<vtkQWidgetWidget>::New();
+    d->VrInteractionWidget->CreateDefaultRepresentation();
+    //widget->GetQWidgetRepresentation()->GetPlaneSource()->SetPoint2(-0.5, 0.5, -0.5); //TODO:
+    d->VrInteractionWidget->GetQWidgetRepresentation()->GetPlaneSource()->SetOrigin(0, 0, 0);
+    d->VrInteractionWidget->GetQWidgetRepresentation()->GetPlaneSource()->SetPoint1(100, 0, 0);
+    d->VrInteractionWidget->GetQWidgetRepresentation()->GetPlaneSource()->SetPoint2(0, 0, 50);
+    d->VrInteractionWidget->GetQWidgetRepresentation()->GetPlaneSource()->SetNormal(0, 1, 0);
+  }
+
+  //widget->SetWidget(d->HomeWidget);
+
+  //QPushButton* hello = new QPushButton("Hello world!", this);
+  //d->VrInteractionWidget->SetWidget(hello);
+
+  //QPushButton hello( "Hello world!", 0 ); //TODO: This works for some strange reason, but depth is weird
+  //d->VrInteractionWidget->SetWidget(&hello);
+
+  //qMRMLVirtualRealityHomeWidget home; //TODO: This works for some strange reason, but depth is weird
+  //home.show();
+  //d->VrInteractionWidget->SetWidget(&home);
+
+  qMRMLVirtualRealityHomeWidget* home = new qMRMLVirtualRealityHomeWidget();
+  home->show();
+  d->VrInteractionWidget->SetWidget(home);
+
+  d->VrInteractionWidget->SetCurrentRenderer(renderer);
+  //renderer->AddViewProp(d->VrInteractionWidget->GetQWidgetRepresentation());
+  d->VrInteractionWidget->SetInteractor(renderer->GetRenderWindow()->GetInteractor());
+  //d->VrInteractionWidget->SetInteractor(d->Interactor); //TODO:
+
+  d->VrInteractionWidget->SetEnabled(1);
+
+  renderer->Render();
 }

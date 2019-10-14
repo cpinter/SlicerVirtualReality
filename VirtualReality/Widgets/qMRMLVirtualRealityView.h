@@ -106,7 +106,10 @@ public:
 
   /// Register VR module. A button will be added in the modules section of the VR home
   /// widget with the provided icon. When clicked, the given widget will be shown
-  void registerModule(QWidget* widget, QIcon& icon);
+  Q_INVOKABLE void registerModule(QWidget* widget, QIcon& icon);
+
+  /// Show VR home widget in the VR view
+  Q_INVOKABLE void showHomeWidget(vtkRenderer* renderer=nullptr);
 
 signals:
   void physicalToWorldMatrixModified();

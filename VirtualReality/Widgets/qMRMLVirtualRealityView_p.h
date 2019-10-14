@@ -58,6 +58,7 @@ class vtkMRMLVirtualRealityViewNode;
 class vtkObject;
 class vtkOpenVRInteractorStyle;
 class vtkOpenVRRenderWindowInteractor;
+class vtkQWidgetWidget;
 class vtkTimerLog;
 class vtkVirtualRealityViewInteractor;
 class vtkVirtualRealityViewInteractorStyle;
@@ -120,6 +121,7 @@ protected:
   QTimer VirtualRealityLoopTimer;
 
   qMRMLVirtualRealityHomeWidget* HomeWidget;
+  vtkSmartPointer<vtkQWidgetWidget> VrInteractionWidget;
 };
 
 #endif
