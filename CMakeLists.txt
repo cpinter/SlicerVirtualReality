@@ -90,6 +90,7 @@ endif()
 #-----------------------------------------------------------------------------
 # Extension modules
 add_subdirectory(VirtualReality)
+add_subdirectory(GUIWidgets)
 ## NEXT_MODULE
 
 #-----------------------------------------------------------------------------
