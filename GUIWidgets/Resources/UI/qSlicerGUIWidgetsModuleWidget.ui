@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>525</width>
-    <height>319</height>
+    <width>294</width>
+    <height>311</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,7 +23,7 @@
       <item>
        <widget class="QPushButton" name="AddHelloWorldGUIWidgetNodeButton">
         <property name="text">
-         <string>Add Hello World GUI widget node</string>
+         <string>Add GUI widget node with Hello World push button</string>
         </property>
        </widget>
       </item>
@@ -34,12 +34,56 @@
         </item>
         <item>
          <widget class="QPushButton" name="UpdateButtonLabelButton">
+          <property name="toolTip">
+           <string>To test rendering update on change in widget</string>
+          </property>
           <property name="text">
            <string>Update button label</string>
           </property>
          </widget>
         </item>
        </layout>
+      </item>
+      <item>
+       <spacer name="verticalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="AddHomeWidgetButton">
+        <property name="text">
+         <string>Add GUI widget node with Home widget</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="AddDataModuleWidgetButton">
+        <property name="text">
+         <string>Add GUI widget node with Data Module widget</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="AddSegmentEditorWidgetButton">
+        <property name="text">
+         <string>Add GUI widget node with Segment Editor widget</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="AddTransformWidgetButton">
+        <property name="text">
+         <string>Add GUI widget node with Transform widget</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

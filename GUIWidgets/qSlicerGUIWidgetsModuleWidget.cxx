@@ -20,25 +20,32 @@
 
 ==============================================================================*/
 
-// Qt includes
-#include <QDebug>
-
-// Slicer includes
+// GUI Widgets includes
 #include "qSlicerGUIWidgetsModuleWidget.h"
 #include "ui_qSlicerGUIWidgetsModuleWidget.h"
 
 #include "vtkMRMLGUIWidgetNode.h"
 #include "vtkMRMLGUIWidgetDisplayNode.h"
 
-#include "vtkSlicerQWidgetRepresentation.h"
-#include "vtkSlicerQWidgetWidget.h"
+// VirtualReality includes
+#include "vtkMRMLVirtualRealityViewNode.h"
+#include "vtkSlicerVirtualRealityLogic.h"
 
+// Slicer includes
 #include "qSlicerApplication.h"
 #include "qSlicerLayoutManager.h"
+
+#include "vtkSlicerApplicationLogic.h"
 
 // qMRMLWidget includes
 #include "qMRMLThreeDView.h"
 #include "qMRMLThreeDWidget.h"
+
+// Virtual Reality includes
+#include "qMRMLVirtualRealityHomeWidget.h"
+#include "qMRMLVirtualRealityDataModuleWidget.h"
+#include "qMRMLVirtualRealitySegmentEditorWidget.h"
+#include "qMRMLVirtualRealityTransformWidget.h"
 
 // MRML includes
 #include "vtkMRMLScene.h"
@@ -46,6 +53,9 @@
 
 // VTK includes
 #include "vtkRenderer.h"
+
+// Qt includes
+#include <QDebug>
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_ExtensionTemplate
@@ -87,27 +97,44 @@ void qSlicerGUIWidgetsModuleWidget::setup()
   d->setupUi(this);
   this->Superclass::setup();
 
-  QObject::connect(d->AddHelloWorldGUIWidgetNodeButton, SIGNAL(clicked()), this, SLOT(addHelloWorldNodeClicked()));
-  QObject::connect(d->UpdateButtonLabelButton, SIGNAL(clicked()), this, SLOT(updateButtonLabelButtonClicked()));
+  QObject::connect(d->AddHelloWorldGUIWidgetNodeButton, SIGNAL(clicked()), this, SLOT(onAddHelloWorldNodeClicked()));
+  QObject::connect(d->UpdateButtonLabelButton, SIGNAL(clicked()), this, SLOT(onUpdateButtonLabelButtonClicked()));
+
+  QObject::connect(d->AddHomeWidgetButton, SIGNAL(clicked()), this, SLOT(onAddHomeWidgetButtonClicked()));
+  QObject::connect(d->AddDataModuleWidgetButton, SIGNAL(clicked()), this, SLOT(onAddDataModuleWidgetButtonClicked()));
+  QObject::connect(d->AddSegmentEditorWidgetButton, SIGNAL(clicked()), this, SLOT(onAddSegmentEditorWidgetButtonClicked()));
+  QObject::connect(d->AddTransformWidgetButton, SIGNAL(clicked()), this, SLOT(onAddTransformWidgetButtonClicked()));
 }
 
 //-----------------------------------------------------------------------------
-QWidget* qSlicerGUIWidgetsModuleWidget::addHelloWorldNodeClicked()
+void qSlicerGUIWidgetsModuleWidget::setWidgetToGUIWidgetMarkupsNode(vtkMRMLGUIWidgetNode* node, QWidget* widget)
+{
+  if (!node)
+  {
+    return;
+  }
+
+  node->SetWidget((void*)widget);
+
+  this->GUIWidgetsMap[node] = widget;
+}
+
+//-----------------------------------------------------------------------------
+QWidget* qSlicerGUIWidgetsModuleWidget::onAddHelloWorldNodeClicked()
 {
   qSlicerApplication* app = qSlicerApplication::application();
-
   vtkMRMLGUIWidgetNode* widgetNode = vtkMRMLGUIWidgetNode::SafeDownCast(
     app->mrmlScene()->AddNewNodeByClass("vtkMRMLGUIWidgetNode") );
+  widgetNode->SetName("TestButtonWidgetNode");
 
   QPushButton* newButton = new QPushButton("Hello world!");
-  
   this->setWidgetToGUIWidgetMarkupsNode(widgetNode, newButton);
 
   return newButton;
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerGUIWidgetsModuleWidget::updateButtonLabelButtonClicked()
+void qSlicerGUIWidgetsModuleWidget::onUpdateButtonLabelButtonClicked()
 {
   Q_D(qSlicerGUIWidgetsModuleWidget);
 
@@ -126,14 +153,69 @@ void qSlicerGUIWidgetsModuleWidget::updateButtonLabelButtonClicked()
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerGUIWidgetsModuleWidget::setWidgetToGUIWidgetMarkupsNode(vtkMRMLGUIWidgetNode* node, QWidget* widget)
+void qSlicerGUIWidgetsModuleWidget::onAddHomeWidgetButtonClicked()
 {
-  if (!node)
+  Q_D(qSlicerGUIWidgetsModuleWidget);
+
+  qSlicerApplication* app = qSlicerApplication::application();
+  vtkMRMLGUIWidgetNode* widgetNode = vtkMRMLGUIWidgetNode::SafeDownCast(
+    app->mrmlScene()->AddNewNodeByClass("vtkMRMLGUIWidgetNode") );
+  widgetNode->SetName("HomeWidgetNode");
+
+  qMRMLVirtualRealityHomeWidget* widget = new qMRMLVirtualRealityHomeWidget();
+  widget->setMRMLScene(app->mrmlScene());
+  this->setWidgetToGUIWidgetMarkupsNode(widgetNode, widget);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerGUIWidgetsModuleWidget::onAddDataModuleWidgetButtonClicked()
+{
+  Q_D(qSlicerGUIWidgetsModuleWidget);
+
+  qSlicerApplication* app = qSlicerApplication::application();
+  vtkMRMLGUIWidgetNode* widgetNode = vtkMRMLGUIWidgetNode::SafeDownCast(
+    app->mrmlScene()->AddNewNodeByClass("vtkMRMLGUIWidgetNode") );
+  widgetNode->SetName("DataModuleWidgetNode");
+
+  qMRMLVirtualRealityDataModuleWidget* widget = new qMRMLVirtualRealityDataModuleWidget();
+  widget->setMRMLScene(app->mrmlScene());
+  this->setWidgetToGUIWidgetMarkupsNode(widgetNode, widget);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerGUIWidgetsModuleWidget::onAddSegmentEditorWidgetButtonClicked()
+{
+  Q_D(qSlicerGUIWidgetsModuleWidget);
+
+  qSlicerApplication* app = qSlicerApplication::application();
+  vtkMRMLGUIWidgetNode* widgetNode = vtkMRMLGUIWidgetNode::SafeDownCast(
+    app->mrmlScene()->AddNewNodeByClass("vtkMRMLGUIWidgetNode") );
+  widgetNode->SetName("SegmentEditorWidgetNode");
+
+  qMRMLVirtualRealitySegmentEditorWidget* widget = new qMRMLVirtualRealitySegmentEditorWidget();
+  widget->setMRMLScene(app->mrmlScene());
+  this->setWidgetToGUIWidgetMarkupsNode(widgetNode, widget);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerGUIWidgetsModuleWidget::onAddTransformWidgetButtonClicked()
+{
+  Q_D(qSlicerGUIWidgetsModuleWidget);
+
+  qSlicerApplication* app = qSlicerApplication::application();
+  vtkMRMLGUIWidgetNode* widgetNode = vtkMRMLGUIWidgetNode::SafeDownCast(
+    app->mrmlScene()->AddNewNodeByClass("vtkMRMLGUIWidgetNode") );
+  widgetNode->SetName("TransformWidgetNode");
+
+  vtkSlicerVirtualRealityLogic* vrLogic =
+    vtkSlicerVirtualRealityLogic::SafeDownCast(app->applicationLogic()->GetModuleLogic("VirtualReality"));
+  if (!vrLogic)
   {
+    qCritical() << Q_FUNC_INFO << " : invalid VR logic";
     return;
   }
-
-  node->SetWidget((void*)widget);
-
-  this->GUIWidgetsMap[node] = widget;
+ 
+  qMRMLVirtualRealityTransformWidget* widget = new qMRMLVirtualRealityTransformWidget(vrLogic->GetVirtualRealityViewNode());
+  widget->setMRMLScene(app->mrmlScene());
+  this->setWidgetToGUIWidgetMarkupsNode(widgetNode, widget);
 }
