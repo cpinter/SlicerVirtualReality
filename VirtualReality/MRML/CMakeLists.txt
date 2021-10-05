@@ -11,7 +11,7 @@ configure_file(
 #-----------------------------------------------------------------------------
 set(${KIT}_EXPORT_DIRECTIVE "VTK_SLICER_${MODULE_NAME_UPPER}_MODULE_MRML_EXPORT")
 
-set(${KIT}_INCLUDE_DIRECTORIES
+set(${KIT}_INCLUDE_DIRS
   ${VTK_INCLUDE_DIRS}
   )
 

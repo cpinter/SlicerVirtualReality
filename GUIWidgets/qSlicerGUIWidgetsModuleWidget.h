@@ -47,8 +47,13 @@ public:
   virtual ~qSlicerGUIWidgetsModuleWidget();
 
 public slots:
-  QWidget* addHelloWorldNodeClicked();
-  void updateButtonLabelButtonClicked();
+  QWidget* onAddHelloWorldNodeClicked();
+  void onUpdateButtonLabelButtonClicked();
+
+  void onAddHomeWidgetButtonClicked();
+  void onAddDataModuleWidgetButtonClicked();
+  void onAddSegmentEditorWidgetButtonClicked();
+  void onAddTransformWidgetButtonClicked();
 
   /// Assign widget to a GUIWidget markups node
   void setWidgetToGUIWidgetMarkupsNode(vtkMRMLGUIWidgetNode* node, QWidget* widget);

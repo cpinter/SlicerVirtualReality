@@ -26,6 +26,7 @@ set(MODULE_INCLUDE_DIRECTORIES
   # ${CMAKE_CURRENT_SOURCE_DIR}/Widgets
   # ${CMAKE_CURRENT_BINARY_DIR}/Widgets
   ${qSlicerMarkupsModuleWidgets_INCLUDE_DIRS}
+  ${qSlicerVirtualRealityModuleWidgets_INCLUDE_DIRS}
   )
 
 set(MODULE_SRCS
@@ -51,6 +52,8 @@ set(MODULE_TARGET_LIBRARIES
   # vtkSlicer${MODULE_NAME}ModuleMRMLDisplayableManager
   # qSlicer${MODULE_NAME}ModuleWidgets
   qSlicerMarkupsModuleWidgets
+  qSlicerVirtualRealityModuleWidgets
+  vtkSlicerVirtualRealityModuleLogic
   )
 
 set(MODULE_RESOURCES
