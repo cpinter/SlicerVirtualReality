@@ -5,7 +5,7 @@ set(KIT ${PROJECT_NAME})
 #-----------------------------------------------------------------------------
 set(${KIT}_EXPORT_DIRECTIVE "Q_SLICER_QTMODULES_${MODULE_NAME_UPPER}_WIDGETS_EXPORT")
 
-set(${KIT}_INCLUDE_DIRECTORIES
+set(${KIT}_INCLUDE_DIRS
   ${vtkSlicerVirtualRealityModuleMRML_INCLUDE_DIRS}
   ${VTK_INCLUDE_DIRS}
   ${qSlicerSubjectHierarchyModuleWidgets_INCLUDE_DIRS}

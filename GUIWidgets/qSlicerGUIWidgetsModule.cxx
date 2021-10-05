@@ -39,13 +39,6 @@
 // Markups Widgets includes
 #include "qSlicerMarkupsAdditionalOptionsWidgetsFactory.h" 
 
-// MRMLDisplayableManager includes
-//#include <vtkMRMLThreeDViewDisplayableManagerFactory.h>
-
-// DisplayableManager initialization
-//#include <vtkAutoInit.h>
-//VTK_MODULE_INIT(vtkSlicerGUIWidgetsModuleMRMLDisplayableManager);
-
 // Qt includes
 #include <QDebug>
 
