@@ -1,11 +1,11 @@
 #-----------------------------------------------------------------------------
-# Build VTK Rendering OpenVR module, pointing it to Slicer's VTK and the OpenVR
-# libraries also downloaded by this extension.
+# Build VTK Rendering VR module, pointing it to Slicer's VTK
 
 set(proj vtkRenderingVR)
 
 # Set dependency list
-
+set(${proj}_DEPENDS
+  )
 if(DEFINED Slicer_SOURCE_DIR)
   list(APPEND ${proj}_DEPENDS
     VTK
@@ -41,8 +41,6 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${SUPERBUILD_TOPLEVEL_PROJECT}_USE_SYSTEM_${p
       -DPython3_EXECUTABLE:FILEPATH=${Python3_EXECUTABLE}
       )
   endif()
-
-  message("WHat ever!!")
 
   if(NOT EXISTS ${VTKExternalModule_SOURCE_DIR})
     message(FATAL_ERROR "VTKExternalModule_SOURCE_DIR [${VTKExternalModule_SOURCE_DIR}] variable is set to a nonexistent directory")

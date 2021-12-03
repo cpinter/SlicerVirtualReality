@@ -2,15 +2,22 @@
 # Build VTK Rendering OpenVR module, pointing it to Slicer's VTK and the OpenVR
 # libraries also downloaded by this extension.
 
-set(proj vtkRenderingOpenVR)
+# get_cmake_property(_variableNames VARIABLES)
+# list (SORT _variableNames)
+# foreach (_variableName ${_variableNames})
+    # message(STATUS "ZZZ ${_variableName}=${${_variableName}}")
+# endforeach()
 
+set(proj vtkRenderingOpenVR)
 # Set dependency list
 set(${proj}_DEPENDS
   OpenVR
+  vtkRenderingVR
   )
 if(DEFINED Slicer_SOURCE_DIR)
   list(APPEND ${proj}_DEPENDS
     VTK
+    VTK::RenderingVR
     )
 endif()
 
@@ -20,6 +27,8 @@ ExternalProject_Include_Dependencies(${proj} PROJECT_VAR proj)
 if(${SUPERBUILD_TOPLEVEL_PROJECT}_USE_SYSTEM_${proj})
   message(FATAL_ERROR "Enabling ${SUPERBUILD_TOPLEVEL_PROJECT}_USE_SYSTEM_${proj} is not supported !")
 endif()
+
+# include("e:/e/_Extensions/SlicerVirtualReality_D/vtkRenderingVR-build/lib/cmake/vtk/vtkRenderingVR-targets.cmake")
 
 # Sanity checks
 if(DEFINED ${proj}_DIR AND NOT EXISTS ${${proj}_DIR})
