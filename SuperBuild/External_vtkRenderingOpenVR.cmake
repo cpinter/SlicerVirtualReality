@@ -17,7 +17,6 @@ set(${proj}_DEPENDS
 if(DEFINED Slicer_SOURCE_DIR)
   list(APPEND ${proj}_DEPENDS
     VTK
-    VTK::RenderingVR
     )
 endif()
 
