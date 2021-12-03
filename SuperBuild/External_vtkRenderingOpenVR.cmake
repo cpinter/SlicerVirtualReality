@@ -91,6 +91,8 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${SUPERBUILD_TOPLEVEL_PROJECT}_USE_SYSTEM_${p
       -DVTK_OPENVR_OBJECT_FACTORY:BOOL=OFF
       -DOpenVR_INCLUDE_DIR:PATH=${OpenVR_INCLUDE_DIR}
       -DOpenVR_LIBRARY:PATH=${OpenVR_LIBRARY}
+      # Required to find vtkRenderingVR #TODO: Does not work, should be accessible in vtkrenderingopenvr-config.cmake
+      -DvtkRenderingVR_TARGETS:PATH=${CMAKE_BINARY_DIR}/vtkRenderingVR-build/lib/cmake/vtk/vtkRenderingVR-targets.cmake
       ${EXTERNAL_PROJECT_OPTIONAL_CMAKE_CACHE_ARGS}
     DEPENDS
       ${${proj}_DEPENDS}

@@ -9,9 +9,9 @@ set(proj VTKExternalModule)
 set(EP_SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj})
 FetchContent_Populate(${proj}
   QUIET
-  GIT_REPOSITORY ${EP_GIT_PROTOCOL}://github.com/KitwareMedical/VTKExternalModule
-  GIT_TAG        3bae71e5eba073e589810a8bef947d65c90a2174
-  SOURCE_DIR ${EP_SOURCE_DIR}
+  GIT_REPOSITORY ${EP_GIT_PROTOCOL}://github.com/cpinter/VTKExternalModule
+  GIT_TAG        69d0f9abc4bb39f4bff3a3797bb2a1ac595ee6bc
+  SOURCE_DIR     ${EP_SOURCE_DIR}
   )
 message(STATUS "Remote - ${proj} [OK]")
 set(VTKExternalModule_SOURCE_DIR ${EP_SOURCE_DIR})
