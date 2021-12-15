@@ -54,6 +54,7 @@ public slots:
   void onAddDataModuleWidgetButtonClicked();
   void onAddSegmentEditorWidgetButtonClicked();
   void onAddTransformWidgetButtonClicked();
+  void onStartInteractionButtonClicked();
 
   /// Assign widget to a GUIWidget markups node
   void setWidgetToGUIWidgetMarkupsNode(vtkMRMLGUIWidgetNode* node, QWidget* widget);
