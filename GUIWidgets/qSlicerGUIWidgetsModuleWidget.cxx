@@ -299,14 +299,23 @@ void qSlicerGUIWidgetsModuleWidget::onStartInteractionButtonClicked()
 
   // Get plane source
   vtkPlaneSource* planeSource = vtkPlaneSource::SafeDownCast(rep->GetPlaneSource());
-  double* planeOrigin = planeSource->GetOrigin();
-  double* planePoint1 = planeSource->GetPoint1();
-  double* planePoint2 = planeSource->GetPoint2();
+
+  // Get plane normal
   double* planeNormal = planeSource->GetNormal();
-  std::cout << "Plane origin: [" << planeOrigin[0] << ", " << planeOrigin[1] << ", " << planeOrigin[2] << "] \n";
-  std::cout << "Plane point 1: [" << planePoint1[0] << ", " << planePoint1[1] << ", " << planePoint1[2] << "] \n";
-  std::cout << "Plane point 2: [" << planePoint2[0] << ", " << planePoint2[1] << ", " << planePoint2[2] << "] \n";
   std::cout << "Plane normal: [" << planeNormal[0] << ", " << planeNormal[1] << ", " << planeNormal[2] << "] \n";
+
+  // Get plane reference points
+  double* planePointSW = planeSource->GetOrigin(); // bottom left corner
+  double* planePointSE = planeSource->GetPoint1(); // bottom right corner
+  double* planePointNW = planeSource->GetPoint2(); // top left corner
+  double translationWtoE[3] = {0.0, 0.0, 0.0};
+  vtkMath::Subtract(planePointSE, planePointSW, translationWtoE);
+  double planePointNE[3] = { 0.0, 0.0, 0.0 };
+  vtkMath::Add(planePointNW, translationWtoE, planePointNE);
+  std::cout << "Plane point NW: [" << planePointNW[0] << ", " << planePointNW[1] << ", " << planePointNW[2] << "] \n";
+  std::cout << "Plane point NE: [" << planePointNE[0] << ", " << planePointNE[1] << ", " << planePointNE[2] << "] \n";
+  std::cout << "Plane point SW: [" << planePointSW[0] << ", " << planePointSW[1] << ", " << planePointSW[2] << "] \n";
+  std::cout << "Plane point SE: [" << planePointSE[0] << ", " << planePointSE[1] << ", " << planePointSE[2] << "] \n";
 
   // Get intersection point (I need the plane poly data)
   vtkNew<vtkPolyDataMapper> polyDataMapper;
@@ -359,17 +368,17 @@ void qSlicerGUIWidgetsModuleWidget::onStartInteractionButtonClicked()
   std::cout << "Widget bounds: [ " << bounds[0] << ", " << bounds[1] << ", " << bounds[2] << ", " << bounds[3] << ", " << bounds[4] << ", " << bounds[5] << "\n";
 
   // Compute pixel position
-  double intersectionPointVector[3] = { intersectionPoint[0] - planeOrigin[0], intersectionPoint[1] - planeOrigin[1], intersectionPoint[2] - planeOrigin[2] };
-  double xPlaneAxis[3] = { planePoint1[0] - planeOrigin[0], planePoint1[1] - planeOrigin[1], planePoint1[2] - planeOrigin[2] };
-  double yPlaneAxis[3] = { planePoint2[0] - planeOrigin[0], planePoint2[1] - planeOrigin[1], planePoint2[2] - planeOrigin[2] };
+  double intersectionPointVector[3] = { intersectionPoint[0] - planePointNW[0], intersectionPoint[1] - planePointNW[1], intersectionPoint[2] - planePointNW[2] };
+  double xPlaneAxis[3] = { planePointNE[0] - planePointNW[0], planePointNE[1] - planePointNW[1], planePointNE[2] - planePointNW[2] };
+  double yPlaneAxis[3] = { planePointSW[0] - planePointNW[0], planePointSW[1] - planePointNW[1], planePointSW[2] - planePointNW[2] };
   vtkMath::MultiplyScalar(xPlaneAxis, vtkMath::Dot(intersectionPointVector, xPlaneAxis) / vtkMath::Dot(xPlaneAxis, xPlaneAxis));
   vtkMath::MultiplyScalar(yPlaneAxis, vtkMath::Dot(intersectionPointVector, yPlaneAxis) / vtkMath::Dot(yPlaneAxis, yPlaneAxis));
   double xIntersectionPoint[3] = { 0.0, 0.0, 0.0 };
   double yIntersectionPoint[3] = { 0.0, 0.0, 0.0 };
-  vtkMath::Add(planeOrigin, xPlaneAxis, xIntersectionPoint);
-  vtkMath::Add(planeOrigin, yPlaneAxis, yIntersectionPoint);
-  vtkMath::Subtract(xIntersectionPoint, planeOrigin, xIntersectionPoint); // subtract plane origin
-  vtkMath::Subtract(yIntersectionPoint, planeOrigin, yIntersectionPoint); // subtract plane origin
+  vtkMath::Add(planePointNW, xPlaneAxis, xIntersectionPoint);
+  vtkMath::Add(planePointNW, yPlaneAxis, yIntersectionPoint);
+  vtkMath::Subtract(xIntersectionPoint, planePointNW, xIntersectionPoint); // subtract plane origin
+  vtkMath::Subtract(yIntersectionPoint, planePointNW, yIntersectionPoint); // subtract plane origin
   double xPositionMm = vtkMath::Norm(xIntersectionPoint);
   double yPositionMm = vtkMath::Norm(yIntersectionPoint);
   std::cout << "Pointer intersection position (mm): [ " << xPositionMm << ", " << yPositionMm << "] \n";
@@ -385,16 +394,4 @@ void qSlicerGUIWidgetsModuleWidget::onStartInteractionButtonClicked()
   pressEvent.setButton(Qt::LeftButton);
   pressEvent.setButtons(Qt::LeftButton); 
   QApplication::sendEvent(texture->GetScene(), &pressEvent);
-
-  QGraphicsSceneMouseEvent pressEvent1(QEvent::GraphicsSceneMousePress);
-  pressEvent1.setScenePos(QPointF(xPositionPixels, -yPositionPixels));
-  pressEvent1.setButton(Qt::LeftButton);
-  pressEvent1.setButtons(Qt::LeftButton);
-  QApplication::sendEvent(texture->GetScene(), &pressEvent1);
-
-  QGraphicsSceneMouseEvent pressEvent2(QEvent::GraphicsSceneMousePress);
-  pressEvent2.setScenePos(QPointF(-xPositionPixels, -yPositionPixels));
-  pressEvent2.setButton(Qt::LeftButton);
-  pressEvent2.setButtons(Qt::LeftButton);
-  QApplication::sendEvent(texture->GetScene(), &pressEvent2);
 }
