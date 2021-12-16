@@ -394,4 +394,10 @@ void qSlicerGUIWidgetsModuleWidget::onStartInteractionButtonClicked()
   pressEvent.setButton(Qt::LeftButton);
   pressEvent.setButtons(Qt::LeftButton); 
   QApplication::sendEvent(texture->GetScene(), &pressEvent);
+
+  QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMouseRelease);
+  releaseEvent.setScenePos(QPointF(xPositionPixels, yPositionPixels));
+  releaseEvent.setButton(Qt::LeftButton);
+  releaseEvent.setButtons(Qt::LeftButton);
+  QApplication::sendEvent(texture->GetScene(), &releaseEvent);
 }
