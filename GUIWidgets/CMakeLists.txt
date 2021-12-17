@@ -51,6 +51,7 @@ set(MODULE_TARGET_LIBRARIES
   vtkSlicer${MODULE_NAME}ModuleVTKWidgets
   # vtkSlicer${MODULE_NAME}ModuleMRMLDisplayableManager
   # qSlicer${MODULE_NAME}ModuleWidgets
+  vtkSlicerMarkupsModuleMRMLDisplayableManager
   qSlicerMarkupsModuleWidgets
   qSlicerVirtualRealityModuleWidgets
   vtkSlicerVirtualRealityModuleLogic
