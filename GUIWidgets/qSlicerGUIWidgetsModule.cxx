@@ -37,7 +37,7 @@
 #include <vtkSlicerMarkupsLogic.h>
 
 // Markups Widgets includes
-#include "qSlicerMarkupsAdditionalOptionsWidgetsFactory.h" 
+#include "qMRMLMarkupsOptionsWidgetsFactory.h"
 
 // Qt includes
 #include <QDebug>
