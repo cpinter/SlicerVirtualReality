@@ -254,10 +254,6 @@ void qSlicerGUIWidgetsModuleWidget::onStartInteractionButtonClicked()
 {
   std::cout << "\n\nqSlicerGUIWidgetsModuleWidget::onStartInteractionButtonClicked() \n";
 
-  // Line points
-  double pointA_h[4] = { 0.0, -100.0, 0.0, 1.0 };
-  double pointB_h[4] = { 0.0,  100.0, 0.0, 1.0 };
-
   // Pointer transform
   qSlicerApplication* app = qSlicerApplication::application();
   vtkMRMLLinearTransformNode* transformNode = vtkMRMLLinearTransformNode::SafeDownCast(app->mrmlScene()->GetFirstNodeByName("PointerTransform"));
@@ -266,6 +262,10 @@ void qSlicerGUIWidgetsModuleWidget::onStartInteractionButtonClicked()
     std::cout << "ERROR: Pointer transform was not found in scene... \n";
     return;
     }
+
+  // Line points
+  double pointA_h[4] = { 0.0, -100.0, 0.0, 1.0 };
+  double pointB_h[4] = { 0.0,  100.0, 0.0, 1.0 };
 
   // Get transformed line points
   double pointA_transf_h[4] = { 0.0, 0.0, 0.0, 1.0 };
@@ -287,9 +287,7 @@ void qSlicerGUIWidgetsModuleWidget::onStartInteractionButtonClicked()
     // application is closing
     return;
     }
-
   qMRMLThreeDWidget* threeDWidget = layoutManager->threeDWidget(0);
-
   vtkMRMLMarkupsDisplayableManager* markupsDisplayableManager = vtkMRMLMarkupsDisplayableManager::SafeDownCast(threeDWidget->threeDView()->displayableManagerByClassName("vtkMRMLMarkupsDisplayableManager"));
   
   // Get widget representation from displayabale manager
@@ -317,17 +315,10 @@ void qSlicerGUIWidgetsModuleWidget::onStartInteractionButtonClicked()
   std::cout << "Plane point SW: [" << planePointSW[0] << ", " << planePointSW[1] << ", " << planePointSW[2] << "] \n";
   std::cout << "Plane point SE: [" << planePointSE[0] << ", " << planePointSE[1] << ", " << planePointSE[2] << "] \n";
 
-  // Get intersection point (I need the plane poly data)
-  vtkNew<vtkPolyDataMapper> polyDataMapper;
-  polyDataMapper->SetInputData(planeSource->GetOutput());
-  polyDataMapper->Update();
-
-  // Plane cell locator
+  // Compute intersection point
   vtkNew<vtkCellLocator> cellLocator;
   cellLocator->SetDataSet(planeSource->GetOutput());
-  cellLocator->BuildLocator();
-
-  // Compute intersection point
+  cellLocator->BuildLocator(); 
   double tolerance = 0.001;
   double t = 0.0;
   double pcoords[3] = { 0.0 };
@@ -346,7 +337,7 @@ void qSlicerGUIWidgetsModuleWidget::onStartInteractionButtonClicked()
     return;
     }
 
-  // Plane dimensions
+  // Get plane dimensions
   vtkSlicerQWidgetTexture* texture = rep->GetQWidgetTexture();
   QWidget* qWidget = texture->GetWidget();
   if (!qWidget)
@@ -386,15 +377,14 @@ void qSlicerGUIWidgetsModuleWidget::onStartInteractionButtonClicked()
   int yPositionPixels = yPositionMm / spacingMmPerPixel;
   std::cout << "Pointer intersection position (pixels): [ " << xPositionPixels << ", " << yPositionPixels << "] \n";
 
-  // Send event
-  //QMouseEvent eve((QEvent::MouseMove), QPoint(xPositionPixels, yPositionPixels), Qt::NoButton, Qt::NoButton, Qt::NoModifier);
-  //QApplication::sendEvent(texture->GetScene(), &eve);
+  // Send press event
   QGraphicsSceneMouseEvent pressEvent(QEvent::GraphicsSceneMousePress);
   pressEvent.setScenePos(QPointF(xPositionPixels, yPositionPixels));
   pressEvent.setButton(Qt::LeftButton);
   pressEvent.setButtons(Qt::LeftButton); 
   QApplication::sendEvent(texture->GetScene(), &pressEvent);
 
+  // Send release event  
   QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMouseRelease);
   releaseEvent.setScenePos(QPointF(xPositionPixels, yPositionPixels));
   releaseEvent.setButton(Qt::LeftButton);
