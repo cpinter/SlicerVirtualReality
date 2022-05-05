@@ -30,13 +30,14 @@ class PointerSimulator(ScriptedLoadableModule):
 #------------------------------------------------------------------------------
 class PointerSimulatorWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   
-  def __init__(self, parent=None):
+  def __init__(self, parent):
     """
     Called when the user opens the module the first time and the widget is initialized.
     """
     ScriptedLoadableModuleWidget.__init__(self, parent)
-    VTKObservationMixin.__init__(self)  # needed for parameter node observation
-    self.logic = None
+    VTKObservationMixin.__init__(self)
+
+    self.logic = PointerSimulatorLogic(self)
     self._parameterNode = None
     self._updatingGUIFromParameterNode = False
 
@@ -59,10 +60,6 @@ class PointerSimulatorWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     # "setMRMLScene(vtkMRMLScene*)" slot.
     uiWidget.setMRMLScene(slicer.mrmlScene)
 
-    # Create logic class. Logic implements all computations that should be possible to run
-    # in batch mode, without a graphical user interface.
-    self.logic = PointerSimulatorLogic()
-
     # Connections
 
     # These connections ensure that we update parameter node when scene is closed
@@ -75,18 +72,6 @@ class PointerSimulatorWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     # Make sure parameter node is initialized (needed for module reload)
     self.initializeParameterNode()
-
-    # Create pointer model
-    origin = [0.0, -100.0, 0.0]
-    direction = [0.0, 1.0, 0.0]
-    length = 200.0
-    self.logic.updatePointerModel(origin, direction, length)
-
-    # Create pointer transform
-    self.logic.updatePointerTransform(0.0,0.0,0.0)
-
-    # Set pointer transform
-    self.ui.translationSliders.setMRMLTransformNode(self.logic.pointerTransform)
 
   def cleanup(self):
     """
@@ -190,29 +175,40 @@ class PointerSimulatorWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def onClickButtonClicked(self):
     print('onClickButtonClicked')
 
-    print('Checked: ', self.ui.clickButton.checked)
+    # Create pointer model
+    origin = [0.0, 0.0, 0.0]
+    direction = [0.0, 0.0, -1.0]
+    length = 500.0
+    self.logic.updatePointerModel(origin, direction, length)
 
-    if self.ui.clickButton.checked:  
-      self.clickState = True
-      self.ui.clickButton.setText('Clicked')
-      self.logic.updatePointerState(True)
-    else:
-      self.clickState = False
-      self.ui.clickButton.setText('Click')
-      self.logic.updatePointerState(False)
+    # Create pointer transform
+    self.logic.updatePointerTransform(0.0,0.0,0.0)
+
+    # Set pointer transform
+    self.ui.translationSliders.setMRMLTransformNode(self.logic.pointerTransform)
+
+    # Load avatars
+    self.logic.loadAvatars()
+
+    # Transform pointer by controller transform
+    self.logic.applyControllerTransform()
     
 #------------------------------------------------------------------------------
 #
 # PointerSimulatorLogic
 #
 #------------------------------------------------------------------------------
-class PointerSimulatorLogic(ScriptedLoadableModuleLogic):
+class PointerSimulatorLogic(ScriptedLoadableModuleLogic, VTKObservationMixin):
   
-  def __init__(self):
+  #------------------------------------------------------------------------------
+  def __init__(self, widgetInstance, parent=None):
     """
     Called when the logic class is instantiated. Can be used for initializing member variables.
     """
-    ScriptedLoadableModuleLogic.__init__(self)
+    ScriptedLoadableModuleLogic.__init__(self, parent)
+    VTKObservationMixin.__init__(self)
+
+    self.moduleWidget = widgetInstance
 
     # Pointer model
     self.pointerModel = None
@@ -222,6 +218,7 @@ class PointerSimulatorLogic(ScriptedLoadableModuleLogic):
     # Pointer transform
     self.pointerTransform = None
 
+  #------------------------------------------------------------------------------
   def setDefaultParameters(self, parameterNode):
     """
     Initialize parameter node with default settings.
@@ -233,6 +230,7 @@ class PointerSimulatorLogic(ScriptedLoadableModuleLogic):
     if not parameterNode.GetParameter("TranslateSI"):
       parameterNode.SetParameter("TranslateSI", "0.0")
 
+  #------------------------------------------------------------------------------
   def updatePointerModel(self, origin, direction, length):
 
     # Get/create pointer model
@@ -245,25 +243,15 @@ class PointerSimulatorLogic(ScriptedLoadableModuleLogic):
       tubeFilter.SetRadius(self.pointerRadius) #Default is 0.5
       tubeFilter.SetNumberOfSides(50)
       tubeFilter.Update()
-      # Sphere source
-      self.startSphereSource = vtk.vtkSphereSource()
-      self.startSphereSource.SetRadius(self.pointerRadius * 5)
-      self.endSphereSource = vtk.vtkSphereSource()
-      self.endSphereSource.SetRadius(self.pointerRadius * 2)
-      # Append poly data
-      appendFilter = vtk.vtkAppendPolyData()
-      appendFilter.AddInputConnection(tubeFilter.GetOutputPort())
-      appendFilter.AddInputConnection(self.startSphereSource.GetOutputPort())
-      appendFilter.AddInputConnection(self.endSphereSource.GetOutputPort())
       # Create a mapper and actor
       pointerMapper = vtk.vtkPolyDataMapper()
-      pointerMapper.SetInputConnection(appendFilter.GetOutputPort())
+      pointerMapper.SetInputConnection(tubeFilter.GetOutputPort())
       pointerActor = vtk.vtkActor()
       pointerActor.SetMapper(pointerMapper)
       # Create model node
       self.pointerModel = slicer.vtkMRMLModelNode()
       self.pointerModel.SetName('PointerModel')
-      self.pointerModel.SetPolyDataConnection(appendFilter.GetOutputPort())
+      self.pointerModel.SetPolyDataConnection(tubeFilter.GetOutputPort())
       slicer.mrmlScene.AddNode(self.pointerModel)
       self.pointerModelDisplay = slicer.vtkMRMLModelDisplayNode()
       self.pointerModelDisplay.SetSliceIntersectionVisibility(True)
@@ -271,18 +259,21 @@ class PointerSimulatorLogic(ScriptedLoadableModuleLogic):
       self.pointerModelDisplay.SetOpacity(1.0)
       slicer.mrmlScene.AddNode(self.pointerModelDisplay)
       self.pointerModel.SetAndObserveDisplayNodeID(self.pointerModelDisplay.GetID())
-      # Attribute
-      self.pointerModel.SetAttribute('Clicked', str(False))
 
-    # Update pointer model properties
-    vtk.vtkMath().Normalize(direction)
-    startPoint = np.array(origin)
-    endPoint = startPoint + np.array(direction) * length
-    self.pointerLineSource.SetPoint1(startPoint)
-    self.pointerLineSource.SetPoint2(endPoint)
-    self.startSphereSource.SetCenter(startPoint)
-    self.endSphereSource.SetCenter(endPoint)      
+      # Disable toggle selectable property for model
+      self.pointerModel.SetSelectable(False)
+      
+      # Update pointer model properties
+      vtk.vtkMath().Normalize(direction)
+      startPoint = np.array(origin)
+      endPoint = startPoint + np.array(direction) * length
+      self.pointerLineSource.SetPoint1(startPoint)
+      self.pointerLineSource.SetPoint2(endPoint)
 
+      # Apply scalars to simulate pointer fading away
+      self.createAndApplyColorTable(startPoint)    
+
+  #------------------------------------------------------------------------------
   def updatePointerTransform(self, translationRL, translationAP, translationSI):
 
     # Create pointer transform if it does not exist
@@ -302,22 +293,119 @@ class PointerSimulatorLogic(ScriptedLoadableModuleLogic):
     # Set transform
     self.pointerTransform.SetMatrixTransformToParent(transform.GetMatrix())
 
-  def updatePointerState(self, active):
-    activeColor = (0.0,1.0,0.0)
-    inactiveColor = (1.0,0.0,0.0)
-    if self.pointerModel:
-      if active:
-        print('Setting active color...')
-        self.pointerModel.SetAttribute('Clicked', str(active))
-        self.pointerModel.GetDisplayNode().SetColor(activeColor)
-        self.pointerModel.GetDisplayNode().SetVisibility(False)
-        self.pointerModel.GetDisplayNode().SetVisibility(True)
-      else:
-        print('Setting inactive color...')
-        self.pointerModel.SetAttribute('Clicked', str(active))
-        self.pointerModel.GetDisplayNode().SetColor(inactiveColor)
-        self.pointerModel.GetDisplayNode().SetVisibility(False)
-        self.pointerModel.GetDisplayNode().SetVisibility(True)
+  #------------------------------------------------------------------------------
+  def createAndApplyColorTable(self, origin):
+
+    # Get polydata
+    poly = self.pointerModel.GetPolyData()
+
+    # Get number of points
+    numPoints = poly.GetNumberOfPoints()
+
+    # Create scalar array
+    scalar_array = vtk.vtkFloatArray()
+    scalar_array.SetName("DistanceToOrigin")
+    scalar_array.SetNumberOfComponents(1)
+
+    # Compute distance from each vertex to origin
+    normalizedDistanceToOrigin_array = list()
+    for i in range(numPoints):
+      point = poly.GetPoint(i)
+      distance = np.linalg.norm(np.array(point)-np.array(origin))
+      normalizedDistanceToOrigin_array.append(distance)
+
+    # Normalize distance from 0 to 1
+    maxValue = max(normalizedDistanceToOrigin_array)
+    minValue = min(normalizedDistanceToOrigin_array)
+    for i in range(numPoints):
+      normalizedDistanceToOrigin_array[i] = (normalizedDistanceToOrigin_array[i] - minValue)/(maxValue - minValue)
+      normalizedDistanceToOrigin_array[i] = 1.0 - normalizedDistanceToOrigin_array[i]
+
+    # Fill scalar array from list
+    scalar_array.SetNumberOfTuples(numPoints)
+    for j in range(numPoints):
+      scalar_array.SetTuple1(j,normalizedDistanceToOrigin_array[j])
+
+    # Add scalar to model
+    self.pointerModel.AddPointScalars(scalar_array)
+
+    # Create custom color table
+    myColorTable = slicer.vtkMRMLColorTableNode()
+    myColorTable.SetTypeToUser()
+    myColorTable.SetNumberOfColors(256)
+    myColorTable.SetName("DavidColorTable")
+    for i in range(0,255):
+      myColorTable.SetColor(i, 1.0, 0.0, 0.0, (i+1e-16)/255.0)
+    
+    slicer.mrmlScene.AddNode(myColorTable)
+
+    # Update visualization
+    self.pointerModel.GetDisplayNode().SetActiveScalarName(scalar_array.GetName())
+    self.pointerModel.GetDisplayNode().SetScalarVisibility(True)
+    self.pointerModel.GetDisplayNode().SetAndObserveColorNodeID(myColorTable.GetID()) #apply color table
+
+  #------------------------------------------------------------------------------
+  def loadAvatars(self):
+    # Load avatar models
+    dataFolder = 'C:/D/_Extensions/SlicerVirtualReality/AvatarModels/'
+    try:
+      skinColor = [1.00, 0.89, 0.77]
+      headModel = self.loadModelFromFile(dataFolder, 'Head_S', skinColor, True, 1.0)
+      rightHandModel = self.loadModelFromFile(dataFolder, 'HandRight_S', skinColor, True, 1.0)
+      leftHandModel = self.loadModelFromFile(dataFolder, 'HandLeft_S', skinColor, True, 1.0)
+    except:
+      logging.error('Avatar models could not be loaded...')
+      return
+
+    # Disable toggle selectable property for avatar models
+    headModel.SetSelectable(False)
+    rightHandModel.SetSelectable(False)
+    leftHandModel.SetSelectable(False)    
+
+    # Get controller transforms
+    try:      
+      headTransform = slicer.util.getNode('VirtualReality.HMD')
+      rightControllerTransform = slicer.util.getNode('VirtualReality.RightController')
+      leftControllerTransform = slicer.util.getNode('VirtualReality.LeftController')
+    except:
+      logging.error('HMD and controller transforms were not found in scene...')
+      return
+
+    # Build transform tree
+    headModel.SetAndObserveTransformNodeID(headTransform.GetID())
+    rightHandModel.SetAndObserveTransformNodeID(rightControllerTransform.GetID())
+    leftHandModel.SetAndObserveTransformNodeID(leftControllerTransform.GetID())    
+
+  #------------------------------------------------------------------------------
+  def loadModelFromFile(self, modelFilePath, modelFileName, colorRGB_array, visibility_bool, opacityValue):
+    try:
+        node = slicer.util.getNode(modelFileName)
+    except:
+        try:
+          node = slicer.util.loadModel(modelFilePath + '/' + modelFileName + '.vtk')
+          node.GetModelDisplayNode().SetColor(colorRGB_array)
+          node.GetModelDisplayNode().SetVisibility(visibility_bool)
+          node.GetModelDisplayNode().SetOpacity(opacityValue)
+          print(modelFileName + ' model loaded')
+        except:
+          node = None
+          print('ERROR: ' + modelFileName + ' model not found in path')
+    return node
+
+  #------------------------------------------------------------------------------
+  def applyControllerTransform(self):
+
+    # Get controller transform
+    try:
+      controllerTransform = slicer.util.getNode('VirtualReality.RightController')
+    except:
+      logging.error('ERROR: Right controller transform was not found in the scene.')
+      return
+
+    # Apply transform
+    if self.pointerTransform:
+      self.pointerTransform.SetAndObserveTransformNodeID(controllerTransform.GetID())
+
     
 
 #------------------------------------------------------------------------------
