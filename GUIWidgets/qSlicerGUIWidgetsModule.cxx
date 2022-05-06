@@ -104,7 +104,7 @@ QIcon qSlicerGUIWidgetsModule::icon() const
 //-----------------------------------------------------------------------------
 QStringList qSlicerGUIWidgetsModule::categories() const
 {
-  return QStringList() << "Informatics";
+  return QStringList() << "Virtual Reality";
 }
 
 //-----------------------------------------------------------------------------
