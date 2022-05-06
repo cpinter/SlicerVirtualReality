@@ -132,6 +132,7 @@ void qSlicerGUIWidgetsModuleWidget::setup()
   QObject::connect(d->AddSegmentEditorWidgetButton, SIGNAL(clicked()), this, SLOT(onAddSegmentEditorWidgetButtonClicked()));
   QObject::connect(d->AddTransformWidgetButton, SIGNAL(clicked()), this, SLOT(onAddTransformWidgetButtonClicked()));
 
+  QObject::connect(d->SetUpInteractionButton, SIGNAL(clicked()), this, SLOT(onSetUpInteractionButtonClicked()));
   QObject::connect(d->StartInteractionButton, SIGNAL(clicked()), this, SLOT(onStartInteractionButtonClicked()));
 }
 
@@ -250,6 +251,12 @@ void qSlicerGUIWidgetsModuleWidget::onAddTransformWidgetButtonClicked()
 }
 
 //-----------------------------------------------------------------------------
+void qSlicerGUIWidgetsModuleWidget::onSetUpInteractionButtonClicked()
+{
+  std::cout << "----- onSetUpInteractionButtonClicked ----- \n";
+}
+    
+//-----------------------------------------------------------------------------
 void qSlicerGUIWidgetsModuleWidget::onStartInteractionButtonClicked()
 {
   std::cout << "\n\nqSlicerGUIWidgetsModuleWidget::onStartInteractionButtonClicked() \n";
@@ -263,9 +270,12 @@ void qSlicerGUIWidgetsModuleWidget::onStartInteractionButtonClicked()
     return;
     }
 
+  // Define maximum distance for interaction
+  double maxDistanceForInteraction = 2000; // mm
+
   // Line points
-  double pointA_h[4] = { 0.0, -100.0, 0.0, 1.0 };
-  double pointB_h[4] = { 0.0,  100.0, 0.0, 1.0 };
+  double pointA_h[4] = { 0.0, 0.0, 0.0, 1.0 };
+  double pointB_h[4] = { 0.0, 0.0, -maxDistanceForInteraction, 1.0 };
 
   // Get transformed line points
   double pointA_transf_h[4] = { 0.0, 0.0, 0.0, 1.0 };

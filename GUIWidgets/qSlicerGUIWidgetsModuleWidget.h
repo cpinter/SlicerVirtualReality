@@ -54,6 +54,7 @@ public slots:
   void onAddDataModuleWidgetButtonClicked();
   void onAddSegmentEditorWidgetButtonClicked();
   void onAddTransformWidgetButtonClicked();
+  void onSetUpInteractionButtonClicked();
   void onStartInteractionButtonClicked();
 
   /// Assign widget to a GUIWidget markups node
