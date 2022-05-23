@@ -41,8 +41,6 @@ class PointerSimulatorWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self._parameterNode = None
     self._updatingGUIFromParameterNode = False
 
-    self.clickState = False
-
   def setup(self):
     """
     Called when the user opens the module the first time and the widget is initialized.
@@ -68,7 +66,7 @@ class PointerSimulatorWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     # These connections ensure that whenever user changes some settings on the GUI, that is saved in the MRML scene
     # (in the selected parameter node).
-    self.ui.clickButton.clicked.connect(self.onClickButtonClicked)
+    self.ui.setUpPointerButton.clicked.connect(self.onSetUpPointerButtonClicked)
 
     # Make sure parameter node is initialized (needed for module reload)
     self.initializeParameterNode()
@@ -172,9 +170,7 @@ class PointerSimulatorWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self._parameterNode.EndModify(wasModified)
 
-  def onClickButtonClicked(self):
-    print('onClickButtonClicked')
-
+  def onSetUpPointerButtonClicked(self):
     # Create pointer model
     origin = [0.0, 0.0, 0.0]
     direction = [0.0, 0.0, -1.0]
@@ -186,9 +182,7 @@ class PointerSimulatorWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     # Set pointer transform
     self.ui.translationSliders.setMRMLTransformNode(self.logic.pointerTransform)
-
-    # Load avatars
-    self.logic.loadAvatars()
+    self.ui.rotationSliders.setMRMLTransformNode(self.logic.pointerTransform)
 
     # Transform pointer by controller transform
     self.logic.applyControllerTransform()
@@ -333,7 +327,7 @@ class PointerSimulatorLogic(ScriptedLoadableModuleLogic, VTKObservationMixin):
     myColorTable = slicer.vtkMRMLColorTableNode()
     myColorTable.SetTypeToUser()
     myColorTable.SetNumberOfColors(256)
-    myColorTable.SetName("DavidColorTable")
+    myColorTable.SetName("CustomColorTable")
     for i in range(0,255):
       myColorTable.SetColor(i, 1.0, 0.0, 0.0, (i+1e-16)/255.0)
     
@@ -343,54 +337,6 @@ class PointerSimulatorLogic(ScriptedLoadableModuleLogic, VTKObservationMixin):
     self.pointerModel.GetDisplayNode().SetActiveScalarName(scalar_array.GetName())
     self.pointerModel.GetDisplayNode().SetScalarVisibility(True)
     self.pointerModel.GetDisplayNode().SetAndObserveColorNodeID(myColorTable.GetID()) #apply color table
-
-  #------------------------------------------------------------------------------
-  def loadAvatars(self):
-    # Load avatar models
-    dataFolder = 'C:/D/_Extensions/SlicerVirtualReality/AvatarModels/'
-    try:
-      skinColor = [1.00, 0.89, 0.77]
-      headModel = self.loadModelFromFile(dataFolder, 'Head_S', skinColor, True, 1.0)
-      rightHandModel = self.loadModelFromFile(dataFolder, 'HandRight_S', skinColor, True, 1.0)
-      leftHandModel = self.loadModelFromFile(dataFolder, 'HandLeft_S', skinColor, True, 1.0)
-    except:
-      logging.error('Avatar models could not be loaded...')
-      return
-
-    # Disable toggle selectable property for avatar models
-    headModel.SetSelectable(False)
-    rightHandModel.SetSelectable(False)
-    leftHandModel.SetSelectable(False)    
-
-    # Get controller transforms
-    try:      
-      headTransform = slicer.util.getNode('VirtualReality.HMD')
-      rightControllerTransform = slicer.util.getNode('VirtualReality.RightController')
-      leftControllerTransform = slicer.util.getNode('VirtualReality.LeftController')
-    except:
-      logging.error('HMD and controller transforms were not found in scene...')
-      return
-
-    # Build transform tree
-    headModel.SetAndObserveTransformNodeID(headTransform.GetID())
-    rightHandModel.SetAndObserveTransformNodeID(rightControllerTransform.GetID())
-    leftHandModel.SetAndObserveTransformNodeID(leftControllerTransform.GetID())    
-
-  #------------------------------------------------------------------------------
-  def loadModelFromFile(self, modelFilePath, modelFileName, colorRGB_array, visibility_bool, opacityValue):
-    try:
-        node = slicer.util.getNode(modelFileName)
-    except:
-        try:
-          node = slicer.util.loadModel(modelFilePath + '/' + modelFileName + '.vtk')
-          node.GetModelDisplayNode().SetColor(colorRGB_array)
-          node.GetModelDisplayNode().SetVisibility(visibility_bool)
-          node.GetModelDisplayNode().SetOpacity(opacityValue)
-          print(modelFileName + ' model loaded')
-        except:
-          node = None
-          print('ERROR: ' + modelFileName + ' model not found in path')
-    return node
 
   #------------------------------------------------------------------------------
   def applyControllerTransform(self):
