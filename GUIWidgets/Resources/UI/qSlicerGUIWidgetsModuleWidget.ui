@@ -104,45 +104,17 @@
          <string>VR pointer development</string>
         </property>
         <layout class="QGridLayout" name="gridLayout">
-         <item row="2" column="0" colspan="2">
-          <widget class="QPushButton" name="StartInteractionButton">
-           <property name="text">
-            <string>Start interaction</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="qMRMLNodeComboBox" name="inputSelector">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
-           <property name="nodeTypes">
-            <stringlist>
-             <string>vtkMRMLGUIWidgetNode</string>
-            </stringlist>
-           </property>
-           <property name="showChildNodeTypes">
-            <bool>false</bool>
-           </property>
-           <property name="addEnabled">
-            <bool>false</bool>
-           </property>
-           <property name="removeEnabled">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0" colspan="2">
+         <item row="0" column="0" colspan="2">
           <widget class="QPushButton" name="SetUpInteractionButton">
            <property name="text">
             <string>Set up interaction</string>
            </property>
           </widget>
          </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="label">
+         <item row="1" column="0" colspan="2">
+          <widget class="QPushButton" name="StartInteractionButton">
            <property name="text">
-            <string>Select target widget:</string>
+            <string>Start interaction</string>
            </property>
           </widget>
          </item>
@@ -169,20 +141,15 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>ctkCollapsibleButton</class>
-   <extends>QWidget</extends>
-   <header>ctkCollapsibleButton.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>qMRMLNodeComboBox</class>
-   <extends>QWidget</extends>
-   <header>qMRMLNodeComboBox.h</header>
-  </customwidget>
-  <customwidget>
    <class>qSlicerWidget</class>
    <extends>QWidget</extends>
    <header>qSlicerWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ctkCollapsibleButton</class>
+   <extends>QWidget</extends>
+   <header>ctkCollapsibleButton.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
