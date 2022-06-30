@@ -30,6 +30,7 @@
 #include "vtkOpenXRRenderWindow.h"
 #include "vtkOpenXRRenderWindowInteractor.h"
 #include "vtkOpenXRRenderer.h"
+#include "vtkOpenXRInteractorStyle.h"
 
 // VirtualReality includes
 #include <vtkVirtualRealityViewInteractorStyle.h>
@@ -62,7 +63,6 @@
 // Slicer includes
 #include "qSlicerApplication.h"
 #include "qSlicerLayoutManager.h"
-#include "vtkSlicerConfigure.h" // For Slicer_USE_OpenVR
 #include "vtkSlicerCamerasModuleLogic.h"
 
 // VirtualReality includes
@@ -143,13 +143,13 @@ CTK_SET_CPP(qMRMLVirtualRealityView, vtkSlicerCamerasModuleLogic*, setCamerasLog
 CTK_GET_CPP(qMRMLVirtualRealityView, vtkSlicerCamerasModuleLogic*, camerasLogic, CamerasLogic);
 
 //----------------------------------------------------------------------------
-CTK_GET_CPP(qMRMLVirtualRealityView, vtkOpenVRRenderer*, renderer, Renderer);
+CTK_GET_CPP(qMRMLVirtualRealityView, vtkVRRenderer*, renderer, Renderer);
 
 //----------------------------------------------------------------------------
-CTK_GET_CPP(qMRMLVirtualRealityView, vtkOpenVRRenderWindow*, renderWindow, RenderWindow);
+CTK_GET_CPP(qMRMLVirtualRealityView, vtkVRRenderWindow*, renderWindow, RenderWindow);
 
 //----------------------------------------------------------------------------
-CTK_GET_CPP(qMRMLVirtualRealityView, vtkOpenVRRenderWindowInteractor*, interactor, Interactor);
+CTK_GET_CPP(qMRMLVirtualRealityView, vtkVRRenderWindowInteractor*, interactor, Interactor);
 
 //---------------------------------------------------------------------------
 void qMRMLVirtualRealityViewPrivate::createRenderWindow()
@@ -169,12 +169,23 @@ void qMRMLVirtualRealityViewPrivate::createRenderWindow()
   this->LastViewPosition[1] = 0.0;
   this->LastViewPosition[2] = 0.0;
 
-  this->RenderWindow = vtkSmartPointer<vtkOpenVRRenderWindow>::New();
-  this->Renderer = vtkSmartPointer<vtkOpenVRRenderer>::New();
-  this->Interactor = vtkSmartPointer<vtkVirtualRealityViewInteractor>::New();
-  //this->Interactor = vtkSmartPointer<vtkOpenVRRenderWindowInteractor>::New(); //TODO: For debugging the original interactor
-  this->InteractorStyle = vtkSmartPointer<vtkVirtualRealityViewInteractorStyle>::New();
-  //this->InteractorStyle = vtkSmartPointer<vtkOpenVRInteractorStyle>::New(); //TODO: For debugging the original interactor
+  if (this->MRMLVirtualRealityViewNode && this->MRMLVirtualRealityViewNode->GetUseOpenXR())
+  {
+    this->RenderWindow = vtkSmartPointer<vtkOpenXRRenderWindow>::New();
+    this->Renderer = vtkSmartPointer<vtkOpenXRRenderer>::New();
+    this->Interactor = vtkSmartPointer<vtkOpenXRRenderWindowInteractor>::New();
+    this->InteractorStyle = vtkSmartPointer<vtkOpenXRInteractorStyle>::New();
+  }
+  else
+  {
+    this->RenderWindow = vtkSmartPointer<vtkOpenVRRenderWindow>::New();
+    this->Renderer = vtkSmartPointer<vtkOpenVRRenderer>::New();
+    this->Interactor = vtkSmartPointer<vtkVirtualRealityViewInteractor>::New();
+    //this->Interactor = vtkSmartPointer<vtkOpenVRRenderWindowInteractor>::New(); //TODO: For debugging the original interactor
+    this->InteractorStyle = vtkSmartPointer<vtkVirtualRealityViewInteractorStyle>::New();
+    //this->InteractorStyle = vtkSmartPointer<vtkOpenVRInteractorStyle>::New(); //TODO: For debugging the original interactor
+  }
+
   this->Interactor->SetInteractorStyle(this->InteractorStyle);
   this->InteractorStyle->SetInteractor(this->Interactor);
   this->InteractorStyle->SetCurrentRenderer(this->Renderer);
@@ -230,7 +241,18 @@ void qMRMLVirtualRealityViewPrivate::createRenderWindow()
   this->DisplayableManagerGroup = vtkSmartPointer<vtkMRMLDisplayableManagerGroup>::Take(
                                     factory->InstantiateDisplayableManagers(q->renderer()));
   this->DisplayableManagerGroup->SetMRMLDisplayableNode(this->MRMLVirtualRealityViewNode);
-  this->InteractorStyle->SetDisplayableManagers(this->DisplayableManagerGroup);
+
+  vtkVirtualRealityViewInteractorStyle* vrInteractorStyle =
+    vtkVirtualRealityViewInteractorStyle::SafeDownCast(this->InteractorStyle);
+  if (vrInteractorStyle)
+  {
+    vrInteractorStyle->SetDisplayableManagers(this->DisplayableManagerGroup);
+  }
+  else
+  {
+    //TODO: OpenXR
+    qWarning() << Q_FUNC_INFO << ": OpenXR implementation not yet available";
+  }
 
   qDebug() << Q_FUNC_INFO << ": Number of registered displayable manager:" << this->DisplayableManagerGroup->GetDisplayableManagerCount();
 
@@ -275,11 +297,13 @@ void qMRMLVirtualRealityViewPrivate::createRenderWindow()
   q->updateViewFromReferenceViewCamera();
 
   this->RenderWindow->Initialize();
-  if (!this->RenderWindow->GetHMD())
+  vtkOpenVRRenderWindow* openVrRenderWindow = vtkOpenVRRenderWindow::SafeDownCast(this->RenderWindow);
+  if (openVrRenderWindow && !openVrRenderWindow->GetHMD())
   {
     qWarning() << Q_FUNC_INFO << ": Failed to initialize OpenVR RenderWindow";
     return;
   }
+  //TODO: OpenXR
 }
 
 //---------------------------------------------------------------------------
@@ -358,51 +382,67 @@ void qMRMLVirtualRealityViewPrivate::updateWidgetFromMRML()
     // Desired update rate
     this->RenderWindow->SetDesiredUpdateRate(this->desiredUpdateRate());
 
-    // Magnification
-    double magnification = this->MRMLVirtualRealityViewNode->GetMagnification();
-    if (magnification < 0.01)
+    vtkOpenVRRenderWindow* openVrRenderWindow = vtkOpenVRRenderWindow::SafeDownCast(this->RenderWindow);
+    if (openVrRenderWindow)
     {
-      magnification = 0.01;
-    }
-    else if (magnification > 100.0)
-    {
-      magnification = 100.0;
-    }
-    this->InteractorStyle->SetMagnification(magnification);
-
-    // Dolly physical speed
-    double dollyPhysicalSpeedMps = this ->MRMLVirtualRealityViewNode->GetMotionSpeed();
-
-    // 1.6666 m/s is walking speed (= 6 km/h), which is the default. We multiply it with the factor
-    this->InteractorStyle->SetDollyPhysicalSpeed(dollyPhysicalSpeedMps);
-
-    if (this->RenderWindow->GetHMD())
-    {
-      vtkEventDataDevice deviceIdsToUpdate[] = { vtkEventDataDevice::RightController, vtkEventDataDevice::LeftController, vtkEventDataDevice::Unknown };
-      for (int deviceIdIndex = 0; deviceIdsToUpdate[deviceIdIndex] != vtkEventDataDevice::Unknown; deviceIdIndex++)
+      // Magnification
+      double magnification = this->MRMLVirtualRealityViewNode->GetMagnification();
+      if (magnification < 0.01)
       {
-        vtkOpenVRModel* model = vtkOpenVRModel::SafeDownCast(this->RenderWindow->GetModelForDevice(deviceIdsToUpdate[deviceIdIndex]));
-        if (!model)
-        {
-          continue;
-        }
-        model->SetVisibility(this->MRMLVirtualRealityViewNode->GetControllerModelsVisible());
+        magnification = 0.01;
       }
-
-      // Update tracking reference visibility
-      for (uint32_t deviceIdIndex = 0; deviceIdIndex < vr::k_unMaxTrackedDeviceCount; ++deviceIdIndex)
+      else if (magnification > 100.0)
       {
-        if (this->RenderWindow->GetHMD()->GetTrackedDeviceClass(deviceIdIndex) == vr::TrackedDeviceClass_TrackingReference)
+        magnification = 100.0;
+      }
+      vtkVirtualRealityViewInteractorStyle* vrInteractorStyle =
+        vtkVirtualRealityViewInteractorStyle::SafeDownCast(this->InteractorStyle);
+      if (!vrInteractorStyle)
+      {
+        qCritical() << Q_FUNC_INFO << ": Invalid interactor style type";
+        return;
+      }
+      vrInteractorStyle->SetMagnification(magnification);
+
+      // Dolly physical speed
+      double dollyPhysicalSpeedMps = this ->MRMLVirtualRealityViewNode->GetMotionSpeed();
+
+      // 1.6666 m/s is walking speed (= 6 km/h), which is the default. We multiply it with the factor
+      this->InteractorStyle->SetDollyPhysicalSpeed(dollyPhysicalSpeedMps);
+
+      if (openVrRenderWindow->GetHMD())
+      {
+        vtkEventDataDevice deviceIdsToUpdate[] = { vtkEventDataDevice::RightController, vtkEventDataDevice::LeftController, vtkEventDataDevice::Unknown };
+        for (int deviceIdIndex = 0; deviceIdsToUpdate[deviceIdIndex] != vtkEventDataDevice::Unknown; deviceIdIndex++)
         {
-          vtkOpenVRModel* model = vtkOpenVRModel::SafeDownCast(this->RenderWindow->GetModelForDevice(
-            this->RenderWindow->GetDeviceForOpenVRHandle(deviceIdIndex)));
+          vtkOpenVRModel* model = vtkOpenVRModel::SafeDownCast(this->RenderWindow->GetModelForDevice(deviceIdsToUpdate[deviceIdIndex]));
           if (!model)
           {
             continue;
           }
-          model->SetVisibility(this->MRMLVirtualRealityViewNode->GetLighthouseModelsVisible());
+          model->SetVisibility(this->MRMLVirtualRealityViewNode->GetControllerModelsVisible());
+        }
+
+        // Update tracking reference visibility
+        for (uint32_t deviceIdIndex = 0; deviceIdIndex < vr::k_unMaxTrackedDeviceCount; ++deviceIdIndex)
+        {
+          if (openVrRenderWindow->GetHMD()->GetTrackedDeviceClass(deviceIdIndex) == vr::TrackedDeviceClass_TrackingReference)
+          {
+            vtkOpenVRModel* model = vtkOpenVRModel::SafeDownCast(this->RenderWindow->GetModelForDevice(
+              openVrRenderWindow->GetDeviceForOpenVRHandle(deviceIdIndex)));
+            if (!model)
+            {
+              continue;
+            }
+            model->SetVisibility(this->MRMLVirtualRealityViewNode->GetLighthouseModelsVisible());
+          }
         }
       }
+    }
+    else
+    {
+      //TODO: OpenXR
+      qWarning() << Q_FUNC_INFO << ": OpenXR implementation not yet available";
     }
   }
 
@@ -442,7 +482,13 @@ double qMRMLVirtualRealityViewPrivate::stillUpdateRate()
 // --------------------------------------------------------------------------
 void qMRMLVirtualRealityViewPrivate::doOpenVirtualReality()
 {
-  if (this->Interactor && this->RenderWindow && this->RenderWindow->GetHMD() && this->Renderer)
+  if (!this->Interactor || !this->RenderWindow || !this->Renderer)
+  {
+    return;
+  }
+
+  vtkOpenVRRenderWindow* openVrRenderWindow = vtkOpenVRRenderWindow::SafeDownCast(this->RenderWindow);
+  if (openVrRenderWindow && openVrRenderWindow->GetHMD())
   {
     this->Interactor->DoOneEvent(this->RenderWindow, this->Renderer);
 
@@ -513,6 +559,11 @@ void qMRMLVirtualRealityViewPrivate::doOpenVirtualReality()
       this->LastViewUpdateTime->StartTimer();
     }
   }
+  else
+  {
+    //TODO: OpenXR
+    qWarning() << Q_FUNC_INFO << ": OpenXR implementation not yet available";
+  }
 }
 
 // --------------------------------------------------------------------------
@@ -537,32 +588,41 @@ void qMRMLVirtualRealityViewPrivate::updateTransformNodeWithControllerPose(vtkEv
   }
 
   vr::TrackedDevicePose_t* tdPose;
-  this->Interactor->GetTrackedDevicePose(device, &tdPose);
 
-  if (tdPose == nullptr)
+  vtkVirtualRealityViewInteractor* openVrInteractor = vtkVirtualRealityViewInteractor::SafeDownCast(this->Interactor);
+  if (openVrInteractor)
   {
-    qCritical() << Q_FUNC_INFO << ": Unable to retrieve pose associated with VR tracker with ID: " << (int)device;
-  }
-  if (tdPose == nullptr || tdPose->eTrackingResult != vr::TrackingResult_Running_OK)
-  {
-    node->SetAttribute("VirtualReality.ControllerActive", "0");
+    openVrInteractor->GetTrackedDevicePose(device, &tdPose);
+    if (tdPose == nullptr)
+    {
+      qCritical() << Q_FUNC_INFO << ": Unable to retrieve pose associated with VR tracker with ID: " << (int)device;
+    }
+    if (tdPose == nullptr || tdPose->eTrackingResult != vr::TrackingResult_Running_OK)
+    {
+      node->SetAttribute("VirtualReality.ControllerActive", "0");
+    }
+    else
+    {
+      node->SetAttribute("VirtualReality.ControllerActive", "1");
+    }
+
+    if (tdPose == nullptr || !tdPose->bDeviceIsConnected)
+    {
+      node->SetAttribute("VirtualReality.ControllerConnected", "0");
+    }
+    else
+    {
+      node->SetAttribute("VirtualReality.ControllerConnected", "1");
+    }
+    updateTransformNodeWithPose(node, tdPose);
+
+    node->EndModify(disabledModify);
   }
   else
   {
-    node->SetAttribute("VirtualReality.ControllerActive", "1");
+    //TODO: OpenXR
+    qWarning() << Q_FUNC_INFO << ": OpenXR implementation not yet available";
   }
-
-  if (tdPose == nullptr || !tdPose->bDeviceIsConnected)
-  {
-    node->SetAttribute("VirtualReality.ControllerConnected", "0");
-  }
-  else
-  {
-    node->SetAttribute("VirtualReality.ControllerConnected", "1");
-  }
-  updateTransformNodeWithPose(node, tdPose);
-
-  node->EndModify(disabledModify);
 }
 
 //----------------------------------------------------------------------------
@@ -585,24 +645,34 @@ void qMRMLVirtualRealityViewPrivate::updateTransformNodeWithHMDPose()
   }
 
   vr::TrackedDevicePose_t* tdPose;
-  this->Interactor->GetTrackedDevicePose(vtkEventDataDevice::HeadMountedDisplay, &tdPose);
 
-  if (tdPose == nullptr)
+  vtkVirtualRealityViewInteractor* openVrInteractor = vtkVirtualRealityViewInteractor::SafeDownCast(this->Interactor);
+  if (openVrInteractor)
   {
-    qCritical() << Q_FUNC_INFO << ": Unable to retrieve HMD pose";
-  }
-  if (tdPose == nullptr || tdPose->eTrackingResult != vr::TrackingResult_Running_OK)
-  {
-    node->SetAttribute("VirtualReality.HMDActive", "0");
+    openVrInteractor->GetTrackedDevicePose(vtkEventDataDevice::HeadMountedDisplay, &tdPose);
+
+    if (tdPose == nullptr)
+    {
+      qCritical() << Q_FUNC_INFO << ": Unable to retrieve HMD pose";
+    }
+    if (tdPose == nullptr || tdPose->eTrackingResult != vr::TrackingResult_Running_OK)
+    {
+      node->SetAttribute("VirtualReality.HMDActive", "0");
+    }
+    else
+    {
+      node->SetAttribute("VirtualReality.HMDActive", "1");
+    }
+
+    updateTransformNodeWithPose(node, tdPose);
+
+    node->EndModify(disabledModify);
   }
   else
   {
-    node->SetAttribute("VirtualReality.HMDActive", "1");
+    //TODO: OpenXR
+    qWarning() << Q_FUNC_INFO << ": OpenXR implementation not yet available";
   }
-
-  updateTransformNodeWithPose(node, tdPose);
-
-  node->EndModify(disabledModify);
 }
 
 //----------------------------------------------------------------------------
@@ -634,23 +704,33 @@ void qMRMLVirtualRealityViewPrivate::updateTransformNodesWithTrackerPoses()
 
     // Now, we have our generic tracker node, let's update it!
     vr::TrackedDevicePose_t* tdPose;
-    this->Interactor->GetTrackedDevicePose(vtkEventDataDevice::GenericTracker, dev, &tdPose);
 
-    if (tdPose == nullptr)
+    vtkVirtualRealityViewInteractor* openVrInteractor = vtkVirtualRealityViewInteractor::SafeDownCast(this->Interactor);
+    if (openVrInteractor)
     {
-      qCritical() << Q_FUNC_INFO << ": Unable to retrieve pose associated with VR tracker with ID: " << dev;
-    }
-    if (tdPose == nullptr || tdPose->eTrackingResult != vr::TrackingResult_Running_OK)
-    {
-      node->SetAttribute("VirtualReality.TrackerActive", "0");
+      openVrInteractor->GetTrackedDevicePose(vtkEventDataDevice::GenericTracker, dev, &tdPose);
+
+      if (tdPose == nullptr)
+      {
+        qCritical() << Q_FUNC_INFO << ": Unable to retrieve pose associated with VR tracker with ID: " << dev;
+      }
+      if (tdPose == nullptr || tdPose->eTrackingResult != vr::TrackingResult_Running_OK)
+      {
+        node->SetAttribute("VirtualReality.TrackerActive", "0");
+      }
+      else
+      {
+        node->SetAttribute("VirtualReality.TrackerActive", "1");
+      }
+      updateTransformNodeWithPose(node, tdPose);
+
+      node->EndModify(disabledModify);
     }
     else
     {
-      node->SetAttribute("VirtualReality.TrackerActive", "1");
+      //TODO: OpenXR
+      qWarning() << Q_FUNC_INFO << ": OpenXR implementation not yet available";
     }
-    updateTransformNodeWithPose(node, tdPose);
-
-    node->EndModify(disabledModify);
   }
 }
 
@@ -670,17 +750,27 @@ void qMRMLVirtualRealityViewPrivate::updateTransformNodeWithPose(vtkMRMLTransfor
   double wdir[3] = { 1., 0., 0. };
 
   vtkNew<vtkMatrix4x4> pose;
-  this->RenderWindow->SetMatrixFromOpenVRPose(pose, *tdPose);
-  this->Interactor->ConvertPoseToWorldCoordinates(pose, pos, wxyz, ppos, wdir);
-  vtkNew<vtkTransform> transform;
-  transform->Translate(pos);
-  transform->RotateWXYZ(wxyz[0], wxyz[1], wxyz[2], wxyz[3]);
-  if (node != nullptr)
+
+  vtkOpenVRRenderWindow* openVrRenderWindow = vtkOpenVRRenderWindow::SafeDownCast(this->RenderWindow);
+  if (openVrRenderWindow)
   {
-    node->SetMatrixTransformToParent(transform->GetMatrix());
+    openVrRenderWindow->SetMatrixFromOpenVRPose(pose, *tdPose);
+    this->Interactor->ConvertPoseToWorldCoordinates(pose, pos, wxyz, ppos, wdir);
+    vtkNew<vtkTransform> transform;
+    transform->Translate(pos);
+    transform->RotateWXYZ(wxyz[0], wxyz[1], wxyz[2], wxyz[3]);
+    if (node != nullptr)
+    {
+      node->SetMatrixTransformToParent(transform->GetMatrix());
+    }
+    node->SetAttribute("VirtualReality.PoseValid", tdPose->bPoseIsValid ? "True" : "False");
+    node->SetAttribute("VirtualReality.PoseStatus", PoseStatusToString(tdPose->eTrackingResult).c_str());
   }
-  node->SetAttribute("VirtualReality.PoseValid", tdPose->bPoseIsValid ? "True" : "False");
-  node->SetAttribute("VirtualReality.PoseStatus", PoseStatusToString(tdPose->eTrackingResult).c_str());
+  else
+  {
+    //TODO: OpenXR
+    qWarning() << Q_FUNC_INFO << ": OpenXR implementation not yet available";
+  }
 }
 
 
@@ -758,15 +848,25 @@ void qMRMLVirtualRealityView::getDisplayableManagers(vtkCollection* displayableM
 //------------------------------------------------------------------------------
 bool qMRMLVirtualRealityView::isHardwareConnected()const
 {
-  vtkOpenVRRenderWindow* renWin = this->renderWindow();
+  vtkVRRenderWindow* renWin = this->renderWindow();
   if (!renWin)
   {
     return false;
   }
-  if (!renWin->GetHMD())
+  vtkOpenVRRenderWindow* openVrRenderWindow = vtkOpenVRRenderWindow::SafeDownCast(renWin);
+  if (openVrRenderWindow)
   {
-    return false;
+    if (!openVrRenderWindow->GetHMD())
+    {
+      return false;
+    }
   }
+  else
+  {
+    //TODO: OpenXR
+    qWarning() << Q_FUNC_INFO << ": OpenXR implementation not yet available";
+  }
+  
   // connected successfully
   return true;
 }
@@ -775,13 +875,24 @@ bool qMRMLVirtualRealityView::isHardwareConnected()const
 void qMRMLVirtualRealityView::setGrabObjectsEnabled(bool enable)
 {
   Q_D(qMRMLVirtualRealityView);
-  if (enable)
+
+  vtkVirtualRealityViewInteractorStyle* vrInteractorStyle =
+    vtkVirtualRealityViewInteractorStyle::SafeDownCast(d->InteractorStyle);
+  if (vrInteractorStyle)
   {
-    d->InteractorStyle->GrabEnabledOn();
+    if (enable)
+    {
+      vrInteractorStyle->GrabEnabledOn();
+    }
+    else
+    {
+      vrInteractorStyle->GrabEnabledOff();
+    }
   }
   else
   {
-    d->InteractorStyle->GrabEnabledOff();
+    //TODO: OpenXR
+    qWarning() << Q_FUNC_INFO << ": OpenXR implementation not yet available";
   }
 }
 
@@ -789,20 +900,43 @@ void qMRMLVirtualRealityView::setGrabObjectsEnabled(bool enable)
 bool qMRMLVirtualRealityView::isGrabObjectsEnabled()
 {
   Q_D(qMRMLVirtualRealityView);
-  return d->InteractorStyle->GetGrabEnabled() != 0;
+
+  vtkVirtualRealityViewInteractorStyle* vrInteractorStyle =
+    vtkVirtualRealityViewInteractorStyle::SafeDownCast(d->InteractorStyle);
+  if (vrInteractorStyle)
+  {
+    return vrInteractorStyle->GetGrabEnabled() != 0;
+  }
+  else
+  {
+    //TODO: OpenXR
+    qWarning() << Q_FUNC_INFO << ": OpenXR implementation not yet available";
+    return false;
+  }
 }
 
 //------------------------------------------------------------------------------
 void qMRMLVirtualRealityView::setDolly3DEnabled(bool enable)
 {
   Q_D(qMRMLVirtualRealityView);
-  if (enable)
+
+  vtkVirtualRealityViewInteractorStyle* vrInteractorStyle =
+    vtkVirtualRealityViewInteractorStyle::SafeDownCast(d->InteractorStyle);
+  if (vrInteractorStyle)
   {
-    d->InteractorStyle->MapInputToAction(vtkEventDataDevice::RightController, vtkEventDataDeviceInput::TrackPad, VTKIS_DOLLY);
+    if (enable)
+    {
+      vrInteractorStyle->MapInputToAction(vtkEventDataDevice::RightController, vtkEventDataDeviceInput::TrackPad, VTKIS_DOLLY);
+    }
+    else
+    {
+      vrInteractorStyle->MapInputToAction(vtkEventDataDevice::RightController, vtkEventDataDeviceInput::TrackPad, VTKIS_NONE);
+    }
   }
   else
   {
-    d->InteractorStyle->MapInputToAction(vtkEventDataDevice::RightController, vtkEventDataDeviceInput::TrackPad, VTKIS_NONE);
+    //TODO: OpenXR
+    qWarning() << Q_FUNC_INFO << ": OpenXR implementation not yet available";
   }
 }
 
@@ -811,35 +945,86 @@ bool qMRMLVirtualRealityView::isDolly3DEnabled()
 {
   Q_D(qMRMLVirtualRealityView);
 
-  return d->InteractorStyle->GetMappedAction(vtkEventDataDevice::RightController, vtkEventDataDeviceInput::TrackPad) == VTKIS_DOLLY;
+  vtkVirtualRealityViewInteractorStyle* vrInteractorStyle =
+    vtkVirtualRealityViewInteractorStyle::SafeDownCast(d->InteractorStyle);
+  if (vrInteractorStyle)
+  {
+    return vrInteractorStyle->GetMappedAction(vtkEventDataDevice::RightController, vtkEventDataDeviceInput::TrackPad) == VTKIS_DOLLY;
+  }
+  else
+  {
+    //TODO: OpenXR
+    qWarning() << Q_FUNC_INFO << ": OpenXR implementation not yet available";
+    return false;
+  }
 }
 
 //------------------------------------------------------------------------------
 void qMRMLVirtualRealityView::setGestureButtonToTrigger()
 {
   Q_D(qMRMLVirtualRealityView);
-  d->Interactor->SetGestureButtonToTrigger();
+
+  vtkVirtualRealityViewInteractor* openVrInteractor = vtkVirtualRealityViewInteractor::SafeDownCast(d->Interactor);
+  if (openVrInteractor)
+  {
+    openVrInteractor->SetGestureButtonToTrigger();
+  }
+  else
+  {
+    //TODO: OpenXR
+    qWarning() << Q_FUNC_INFO << ": OpenXR implementation not yet available";
+  }
 }
 
 //------------------------------------------------------------------------------
 void qMRMLVirtualRealityView::setGestureButtonToGrip()
 {
   Q_D(qMRMLVirtualRealityView);
-  d->Interactor->SetGestureButtonToGrip();
+
+  vtkVirtualRealityViewInteractor* openVrInteractor = vtkVirtualRealityViewInteractor::SafeDownCast(d->Interactor);
+  if (openVrInteractor)
+  {
+    openVrInteractor->SetGestureButtonToGrip();
+  }
+  else
+  {
+    //TODO: OpenXR
+    qWarning() << Q_FUNC_INFO << ": OpenXR implementation not yet available";
+  }
 }
 
 //------------------------------------------------------------------------------
 void qMRMLVirtualRealityView::setGestureButtonToTriggerAndGrip()
 {
   Q_D(qMRMLVirtualRealityView);
-  d->Interactor->SetGestureButtonToTriggerAndGrip();
+
+  vtkVirtualRealityViewInteractor* openVrInteractor = vtkVirtualRealityViewInteractor::SafeDownCast(d->Interactor);
+  if (openVrInteractor)
+  {
+    openVrInteractor->SetGestureButtonToTriggerAndGrip();
+  }
+  else
+  {
+    //TODO: OpenXR
+    qWarning() << Q_FUNC_INFO << ": OpenXR implementation not yet available";
+  }
 }
 
 //------------------------------------------------------------------------------
 void qMRMLVirtualRealityView::setGestureButtonToNone()
 {
   Q_D(qMRMLVirtualRealityView);
-  d->Interactor->SetGestureButtonToNone();
+
+  vtkVirtualRealityViewInteractor* openVrInteractor = vtkVirtualRealityViewInteractor::SafeDownCast(d->Interactor);
+  if (openVrInteractor)
+  {
+    openVrInteractor->SetGestureButtonToNone();
+  }
+  else
+  {
+    //TODO: OpenXR
+    qWarning() << Q_FUNC_INFO << ": OpenXR implementation not yet available";
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -847,7 +1032,17 @@ void qMRMLVirtualRealityView::onPhysicalToWorldMatrixModified()
 {
   Q_D(qMRMLVirtualRealityView);
 
-  d->MRMLVirtualRealityViewNode->SetMagnification(d->InteractorStyle->GetMagnification());
+  vtkVirtualRealityViewInteractorStyle* vrInteractorStyle =
+    vtkVirtualRealityViewInteractorStyle::SafeDownCast(d->InteractorStyle);
+  if (vrInteractorStyle)
+  {
+    d->MRMLVirtualRealityViewNode->SetMagnification(vrInteractorStyle->GetMagnification());
+  }
+  else
+  {
+    //TODO: OpenXR
+    qWarning() << Q_FUNC_INFO << ": OpenXR implementation not yet available";
+  }
 
   emit physicalToWorldMatrixModified();
 }
