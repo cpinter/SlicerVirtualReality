@@ -180,12 +180,17 @@ public:
   /// If set to true then controllers are visible in virtual reality view.
   vtkGetMacro(ControllerModelsVisible, bool);
   vtkSetMacro(ControllerModelsVisible, bool);
-  vtkBooleanMacro(ControllerModelsVisible, bool);
 
   /// If set to true then tracking references (Lighthouses) are visible in virtual reality view.
   vtkGetMacro(LighthouseModelsVisible, bool);
   vtkSetMacro(LighthouseModelsVisible, bool);
   vtkBooleanMacro(LighthouseModelsVisible, bool);
+
+  /// Set whether the OpenXR or the legacy OpenVR backend is used.
+  vtkSetMacro(UseOpenXR, bool);
+  vtkBooleanMacro(UseOpenXR, bool);
+  /// Get whether the OpenXR or the legacy OpenVR backend is used. False (OpenVR) by default.
+  vtkGetMacro(UseOpenXR, bool);
 
   /// Return true if an error has occurred.
   /// "Connected" member requests connection but this method can tell if the
@@ -213,6 +218,8 @@ protected:
   bool ControllerModelsVisible;
   bool LighthouseModelsVisible;
   bool TrackerTransformUpdate;
+  /// Flag determining whether the OpenXR or the legacy OpenVR backend is used. False (OpenVR) by default.
+  bool UseOpenXR = false;
 
   std::string LastErrorMessage;
 

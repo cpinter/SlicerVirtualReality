@@ -18,15 +18,24 @@
 
 ==============================================================================*/
 
-// Need to be included before qMRMLVRView_p
+// Need to be included before qMRMLVirtualRealityView_p
+
+// OpenVR includes
 #include <vtkOpenVRCamera.h>
+#include <vtkOpenVRModel.h>
+#include <vtkOpenVRRenderWindow.h>
+#include <vtkOpenVRRenderer.h>
+
+// OpenXR includes
+#include "vtkOpenXRRenderWindow.h"
+#include "vtkOpenXRRenderWindowInteractor.h"
+#include "vtkOpenXRRenderer.h"
+
+// VirtualReality includes
 #include <vtkVirtualRealityViewInteractorStyle.h>
 //#include <vtkOpenVRInteractorStyle.h> //TODO: For debugging the original interactor
 #include <vtkVirtualRealityViewInteractor.h>
 //#include <vtkOpenVRRenderWindowInteractor.h> //TODO: For debugging the original interactor
-#include <vtkOpenVRModel.h>
-#include <vtkOpenVRRenderWindow.h>
-#include <vtkOpenVRRenderer.h>
 
 #include "qMRMLVirtualRealityView_p.h"
 

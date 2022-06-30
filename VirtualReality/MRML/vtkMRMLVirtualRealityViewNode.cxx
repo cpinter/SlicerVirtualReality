@@ -12,10 +12,11 @@ Version:   $Revision: 1.3 $
 
 =========================================================================auto=*/
 
+// VirtualReality includes
+#include "vtkMRMLVirtualRealityViewNode.h"
+
 // MRML includes
 #include "vtkMRMLScene.h"
-#include "vtkMRMLViewNode.h"
-#include "vtkMRMLVirtualRealityViewNode.h"
 
 // VTK includes
 #include <vtkObjectFactory.h>
@@ -165,7 +166,6 @@ void vtkMRMLVirtualRealityViewNode::SetSceneReferences()
 //------------------------------------------------------------------------------
 double* vtkMRMLVirtualRealityViewNode::defaultBackgroundColor()
 {
-  //static double backgroundColor[3] = {0.70196, 0.70196, 0.90588};
   static double backgroundColor[3] = {0.7568627450980392,
                                       0.7647058823529412,
                                       0.9098039215686275
