@@ -197,9 +197,9 @@ void vtkSlicerQWidgetRepresentation::PrintSelf(ostream& os, vtkIndent indent)
 //------------------------------------------------------------------------------
 void vtkSlicerQWidgetRepresentation::PlaceWidget(double bds[6])
 {
-  this->PlaneSource->SetOrigin(bds[0], bds[2], bds[4]);
-  this->PlaneSource->SetPoint1(bds[1], bds[2], bds[4]);
-  this->PlaneSource->SetPoint2(bds[0], bds[2], bds[5]);
+  this->PlaneSource->SetOrigin(bds[1], bds[2], bds[4]);
+  this->PlaneSource->SetPoint1(bds[0], bds[2], bds[4]);
+  this->PlaneSource->SetPoint2(bds[1], bds[2], bds[5]);
 }
 
 //----------------------------------------------------------------------
