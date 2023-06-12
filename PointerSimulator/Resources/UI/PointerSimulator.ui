@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>315</width>
+    <width>430</width>
     <height>556</height>
    </rect>
   </property>
@@ -18,26 +18,24 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="qMRMLTransformSliders" name="translationSliders"/>
+       <widget class="QPushButton" name="setUpPointerButton">
+        <property name="text">
+         <string>Set up pointer</string>
+        </property>
+       </widget>
       </item>
       <item>
-       <widget class="ctkCollapsibleGroupBox" name="ClickGroupbox">
-        <property name="title">
-         <string>Click</string>
+       <widget class="qMRMLTransformSliders" name="rotationSliders">
+        <property name="Title">
+         <string>Rotation</string>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout_3">
-         <item>
-          <widget class="QPushButton" name="clickButton">
-           <property name="text">
-            <string>Click</string>
-           </property>
-           <property name="checkable">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-        </layout>
+        <property name="TypeOfTransform">
+         <enum>qMRMLTransformSliders::ROTATION</enum>
+        </property>
        </widget>
+      </item>
+      <item>
+       <widget class="qMRMLTransformSliders" name="translationSliders"/>
       </item>
      </layout>
     </widget>
@@ -73,12 +71,6 @@
    <class>ctkCollapsibleButton</class>
    <extends>QWidget</extends>
    <header>ctkCollapsibleButton.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ctkCollapsibleGroupBox</class>
-   <extends>QGroupBox</extends>
-   <header>ctkCollapsibleGroupBox.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
