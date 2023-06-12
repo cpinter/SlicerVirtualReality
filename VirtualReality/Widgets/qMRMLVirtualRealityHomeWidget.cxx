@@ -92,10 +92,11 @@ void qMRMLVirtualRealityHomeWidgetPrivate::init()
   QObject::connect(this->Magnification1xButton, SIGNAL(clicked()), q, SLOT(onMagnification1xPressed()));
   QObject::connect(this->Magnification10xButton, SIGNAL(clicked()), q, SLOT(onMagnification10xPressed()));
   QObject::connect(this->Magnification100xButton, SIGNAL(clicked()), q, SLOT(onMagnification100xPressed()));
-  QObject::connect(this->SyncViewToReferenceViewButton, SIGNAL(clicked()), q, SLOT(updateViewFromReferenceViewCamera()));
+  //TODO: Slot commented out, do not connect
+  //QObject::connect(this->SyncViewToReferenceViewButton, SIGNAL(clicked()), q, SLOT(updateViewFromReferenceViewCamera()));
 
-  //QObject::connect(this->LockMagnificationCheckBox, SIGNAL(toggled(bool)), q, SLOT(setMagnificationLock(bool)));
   //TODO: Magnification lock of view node not implemented yet
+  //QObject::connect(this->LockMagnificationCheckBox, SIGNAL(toggled(bool)), q, SLOT(setMagnificationLock(bool)));
 
   // Hide module widget frame. It appears with the module when a module button is clicked
   this->ModuleWidgetFrame->setVisible(false);
@@ -286,6 +287,7 @@ void qMRMLVirtualRealityHomeWidget::onMagnification100xPressed()
 }
 
 //-----------------------------------------------------------------------------
+//TODO: This member function won't work unless qSlicerVirtualRealityModule and qMRMLVirtualRealityView are included
 /*
 void qMRMLVirtualRealityHomeWidget::updateViewFromReferenceViewCamera()
 {
@@ -305,7 +307,6 @@ void qMRMLVirtualRealityHomeWidget::updateViewFromReferenceViewCamera()
   vrView->updateViewFromReferenceViewCamera();
 }
 */
-//TODO: This member function won't work unless qSlicerVirtualRealityModule and qMRMLVirtualRealityView are included
 
 //-----------------------------------------------------------------------------
 /*
