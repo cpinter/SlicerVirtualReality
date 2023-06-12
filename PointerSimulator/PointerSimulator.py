@@ -248,7 +248,7 @@ class PointerSimulatorLogic(ScriptedLoadableModuleLogic, VTKObservationMixin):
       self.pointerModel.SetPolyDataConnection(tubeFilter.GetOutputPort())
       slicer.mrmlScene.AddNode(self.pointerModel)
       self.pointerModelDisplay = slicer.vtkMRMLModelDisplayNode()
-      self.pointerModelDisplay.SetSliceIntersectionVisibility(True)
+      self.pointerModelDisplay.SetVisibility2D(True)
       self.pointerModelDisplay.SetColor(1,0,0)
       self.pointerModelDisplay.SetOpacity(1.0)
       slicer.mrmlScene.AddNode(self.pointerModelDisplay)

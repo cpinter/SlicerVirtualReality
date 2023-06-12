@@ -153,8 +153,7 @@ void qSlicerGUIWidgetsModuleWidget::setWidgetToGUIWidgetMarkupsNode(vtkMRMLGUIWi
 QWidget* qSlicerGUIWidgetsModuleWidget::onAddHelloWorldNodeClicked()
 {
   qSlicerApplication* app = qSlicerApplication::application();
-  vtkMRMLGUIWidgetNode* widgetNode = vtkMRMLGUIWidgetNode::SafeDownCast(
-    app->mrmlScene()->AddNewNodeByClass("vtkMRMLGUIWidgetNode") );
+  vtkMRMLGUIWidgetNode* widgetNode = vtkMRMLGUIWidgetNode::SafeDownCast(app->mrmlScene()->AddNewNodeByClass("vtkMRMLGUIWidgetNode") );
   widgetNode->SetName("TestButtonWidgetNode");
 
   QPushButton* newButton = new QPushButton("Hello world!");
@@ -188,8 +187,7 @@ void qSlicerGUIWidgetsModuleWidget::onAddHomeWidgetButtonClicked()
   Q_D(qSlicerGUIWidgetsModuleWidget);
 
   qSlicerApplication* app = qSlicerApplication::application();
-  vtkMRMLGUIWidgetNode* widgetNode = vtkMRMLGUIWidgetNode::SafeDownCast(
-    app->mrmlScene()->AddNewNodeByClass("vtkMRMLGUIWidgetNode") );
+  vtkMRMLGUIWidgetNode* widgetNode = vtkMRMLGUIWidgetNode::SafeDownCast(app->mrmlScene()->AddNewNodeByClass("vtkMRMLGUIWidgetNode") );
   widgetNode->SetName("HomeWidgetNode");
 
   qMRMLVirtualRealityHomeWidget* widget = new qMRMLVirtualRealityHomeWidget();
@@ -203,8 +201,7 @@ void qSlicerGUIWidgetsModuleWidget::onAddDataModuleWidgetButtonClicked()
   Q_D(qSlicerGUIWidgetsModuleWidget);
 
   qSlicerApplication* app = qSlicerApplication::application();
-  vtkMRMLGUIWidgetNode* widgetNode = vtkMRMLGUIWidgetNode::SafeDownCast(
-    app->mrmlScene()->AddNewNodeByClass("vtkMRMLGUIWidgetNode") );
+  vtkMRMLGUIWidgetNode* widgetNode = vtkMRMLGUIWidgetNode::SafeDownCast(app->mrmlScene()->AddNewNodeByClass("vtkMRMLGUIWidgetNode") );
   widgetNode->SetName("DataModuleWidgetNode");
 
   qMRMLVirtualRealityDataModuleWidget* widget = new qMRMLVirtualRealityDataModuleWidget();
@@ -218,8 +215,7 @@ void qSlicerGUIWidgetsModuleWidget::onAddSegmentEditorWidgetButtonClicked()
   Q_D(qSlicerGUIWidgetsModuleWidget);
 
   qSlicerApplication* app = qSlicerApplication::application();
-  vtkMRMLGUIWidgetNode* widgetNode = vtkMRMLGUIWidgetNode::SafeDownCast(
-    app->mrmlScene()->AddNewNodeByClass("vtkMRMLGUIWidgetNode") );
+  vtkMRMLGUIWidgetNode* widgetNode = vtkMRMLGUIWidgetNode::SafeDownCast(app->mrmlScene()->AddNewNodeByClass("vtkMRMLGUIWidgetNode") );
   widgetNode->SetName("SegmentEditorWidgetNode");
 
   qMRMLVirtualRealitySegmentEditorWidget* widget = new qMRMLVirtualRealitySegmentEditorWidget();
@@ -233,12 +229,10 @@ void qSlicerGUIWidgetsModuleWidget::onAddTransformWidgetButtonClicked()
   Q_D(qSlicerGUIWidgetsModuleWidget);
 
   qSlicerApplication* app = qSlicerApplication::application();
-  vtkMRMLGUIWidgetNode* widgetNode = vtkMRMLGUIWidgetNode::SafeDownCast(
-    app->mrmlScene()->AddNewNodeByClass("vtkMRMLGUIWidgetNode") );
+  vtkMRMLGUIWidgetNode* widgetNode = vtkMRMLGUIWidgetNode::SafeDownCast(app->mrmlScene()->AddNewNodeByClass("vtkMRMLGUIWidgetNode") );
   widgetNode->SetName("TransformWidgetNode");
 
-  vtkSlicerVirtualRealityLogic* vrLogic =
-    vtkSlicerVirtualRealityLogic::SafeDownCast(app->applicationLogic()->GetModuleLogic("VirtualReality"));
+  vtkSlicerVirtualRealityLogic* vrLogic = vtkSlicerVirtualRealityLogic::SafeDownCast(app->applicationLogic()->GetModuleLogic("VirtualReality"));
   if (!vrLogic)
   {
     qCritical() << Q_FUNC_INFO << " : invalid VR logic";
@@ -253,7 +247,7 @@ void qSlicerGUIWidgetsModuleWidget::onAddTransformWidgetButtonClicked()
 //-----------------------------------------------------------------------------
 void qSlicerGUIWidgetsModuleWidget::onSetUpInteractionButtonClicked()
 {
-  std::cout << "----- onSetUpInteractionButtonClicked ----- \n";
+  qCritical() << "----- onSetUpInteractionButtonClicked (no-op) ----- \n";
 }
     
 //-----------------------------------------------------------------------------
