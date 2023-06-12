@@ -170,8 +170,6 @@ qMRMLVirtualRealityViewPrivate::qMRMLVirtualRealityViewPrivate(qMRMLVirtualReali
   , HomeWidget(nullptr)
 {
   this->MRMLVirtualRealityViewNode = nullptr;
-  this->HomeWidget = new qMRMLVirtualRealityHomeWidget(q_ptr);
-  this->DataModuleWidget = new qMRMLVirtualRealityDataModuleWidget;
 }
 
 //---------------------------------------------------------------------------
@@ -186,7 +184,8 @@ void qMRMLVirtualRealityViewPrivate::init()
 
   // Setup VR home widget
   this->HomeWidget = new qMRMLVirtualRealityHomeWidget(q_ptr);
-  QObject::connect(this, SIGNAL(mrmlSceneChanged(vtkMRMLScene*)), this->HomeWidget, SLOT(setMRMLScene(vtkMRMLScene*)));
+  //TODO: This signal does not exist
+  //QObject::connect(this, SIGNAL(mrmlSceneChanged(vtkMRMLScene*)), this->HomeWidget, SLOT(setMRMLScene(vtkMRMLScene*)));
 }
 
 //----------------------------------------------------------------------------
