@@ -27,20 +27,10 @@
 // MRML includes
 #include "vtkMRMLMeasurementArea.h"
 #include "vtkMRMLScene.h"
-#include "vtkMRMLStorageNode.h"
-#include "vtkMRMLTransformNode.h"
 
 // VTK includes
-#include <vtkCollection.h>
-#include <vtkGeneralTransform.h>
-#include <vtkMatrix4x4.h>
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
-#include <vtkTransform.h>
-#include <vtkTriangle.h>
-
-// STD includes
-#include <sstream>
 
 //----------------------------------------------------------------------------
 vtkMRMLNodeNewMacro(vtkMRMLGUIWidgetNode);
