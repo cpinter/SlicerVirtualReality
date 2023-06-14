@@ -736,11 +736,14 @@ void qMRMLVirtualRealityViewPrivate::updateWidgetFromMRMLNoModify()
 
   this->Renderer->SetTwoSidedLighting(this->MRMLVirtualRealityViewNode->GetTwoSidedLighting());
 
-  bool switchOnAllLights = this->MRMLVirtualRealityViewNode->GetBackLights();
-  for (int i = 2; i < this->Lights->GetNumberOfItems(); i++)
+  if (this->Lights)
   {
-    vtkLight* light = vtkLight::SafeDownCast(this->Lights->GetItemAsObject(i));
-    light->SetSwitch(switchOnAllLights);
+    bool switchOnAllLights = this->MRMLVirtualRealityViewNode->GetBackLights();
+    for (int i = 2; i < this->Lights->GetNumberOfItems(); i++)
+    {
+      vtkLight* light = vtkLight::SafeDownCast(this->Lights->GetItemAsObject(i));
+      light->SetSwitch(switchOnAllLights);
+    }
   }
 
   this->Renderer->SetUseDepthPeeling(this->MRMLVirtualRealityViewNode->GetUseDepthPeeling() != 0);

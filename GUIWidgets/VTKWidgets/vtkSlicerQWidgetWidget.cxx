@@ -87,11 +87,15 @@ vtkSlicerMarkupsWidget* vtkSlicerQWidgetWidget::CreateInstance()const
 void vtkSlicerQWidgetWidget::CreateDefaultRepresentation(
   vtkMRMLMarkupsDisplayNode* markupsDisplayNode, vtkMRMLAbstractViewNode* viewNode, vtkRenderer* renderer)
 {
+  //if (!viewNode->IsA("vtkMRMLVirtualRealityViewNode"))
   if (vtkMRMLSliceNode::SafeDownCast(viewNode))
   {
     // There is no 2D representation of the GUI widget
     return;
   }
+
+  bool wasSelectable = viewNode->GetSelectable();
+  viewNode->SetSelectable(false);  // Workaround to disable texture updates until setup is completed
 
   vtkNew<vtkSlicerQWidgetRepresentation> rep;
   this->SetRenderer(renderer);
@@ -100,6 +104,8 @@ void vtkSlicerQWidgetWidget::CreateDefaultRepresentation(
   rep->SetViewNode(viewNode);
 
   rep->UpdateFromMRML(nullptr, 0); // full update
+
+  viewNode->SetSelectable(wasSelectable);
 }
 
 //------------------------------------------------------------------------------
