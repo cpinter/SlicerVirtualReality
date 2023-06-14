@@ -270,5 +270,8 @@ void vtkSlicerQWidgetRepresentation::OnTextureModified(
   self->PlaceWidget(bounds);
 
   // Trigger rendering in view
-  self->GetViewNode()->Modified();
+  if (self->GetViewNode()->GetSelectable())
+  {
+    self->GetViewNode()->Modified();
+  }
 }

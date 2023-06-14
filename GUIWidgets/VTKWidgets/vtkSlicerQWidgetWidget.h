@@ -77,6 +77,9 @@ public:
     vtkMRMLMarkupsDisplayNode* markupsDisplayNode, vtkMRMLAbstractViewNode* viewNode, vtkRenderer* renderer) override;
 
 protected:
+  QPointF LastWidgetCoordinates;
+
+protected:
   vtkSlicerQWidgetWidget();
   ~vtkSlicerQWidgetWidget() override;
   /*
@@ -88,7 +91,6 @@ protected:
     Active
   };
   */
-  QPointF LastWidgetCoordinates;
 
   // These methods handle events
   //static void SelectAction3D(vtkAbstractWidget*);
