@@ -28,6 +28,9 @@
 #include "vtkMRMLGUIWidgetNode.h"
 #include "vtkMRMLGUIWidgetDisplayNode.h"
 
+// MRML includes
+#include <vtkMRMLScene.h>
+
 // VTK includes
 #include <vtkActor.h>
 #include <vtkCallbackCommand.h>
@@ -270,8 +273,30 @@ void vtkSlicerQWidgetRepresentation::OnTextureModified(
   self->PlaceWidget(bounds);
 
   // Trigger rendering in view
-  if (self->GetViewNode()->GetSelectable())
+  vtkMRMLNode* vrViewNode = self->GetViewNode()->GetScene()->GetSingletonNode("Active", "vtkMRMLVirtualRealityViewNode");
+  if (vrViewNode)
   {
-    self->GetViewNode()->Modified();
+    if (self->GetViewNode()->GetSelectable()) //TODO: Workaround for stack overflow, see vtkSlicerQWidgetWidget::CreateDefaultRepresentation
+    {
+      self->GetViewNode()->Modified();
+
+      //TODO: Workaround for fixing the texture update in the VR view.
+      // Apparently the QGraphicsScene::changed signal is not emitted for the widget representation in the VR view.
+      // However, a connection was added for testing to the QObject::objectNameChanged signal, which does work.
+      // Need to fix the graphics scene changed signal connection.
+      if (self->GetViewNode() != vrViewNode)
+      {
+        if (!vrViewNode->GetAttribute("WaitingForTextureUpdate") || strcmp(vrViewNode->GetAttribute("WaitingForTextureUpdate"), "1"))
+        {
+          vrViewNode->SetAttribute("WaitingForTextureUpdate", "1");
+
+          widget->setObjectName(widget->objectName().compare("AlternateObjectName1") ? "AlternateObjectName1" : "AlternateObjectName2");
+        }
+      }
+      else
+      {
+        vrViewNode->SetAttribute("WaitingForTextureUpdate", "0");  // Indicate that VR view has updated the texture
+      }
+    }
   }
 }

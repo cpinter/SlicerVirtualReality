@@ -109,7 +109,7 @@ void vtkSlicerQWidgetTexture::SetupWidget()
   this->Scene->addWidget(this->Widget);
 
   QObject::connect(this->Scene, &QGraphicsScene::changed, this->UpdateTextureMethod);
-  QObject::connect(this->Widget, &QObject::objectNameChanged, this->UpdateTextureMethod); //TODO: For debugging
+  QObject::connect(this->Widget, &QObject::objectNameChanged, this->UpdateTextureMethod); //TODO: Workaround, see vtkSlicerQWidgetRepresentation::OnTextureModified
 
   if (this->TextureImageData.GetPointer() == nullptr)
   {
