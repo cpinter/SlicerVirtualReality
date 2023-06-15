@@ -32,9 +32,17 @@
 
 #include "vtkSlicerQWidgetTexture.h"
 
-// VirtualReality includes
-#include "vtkMRMLVirtualRealityViewNode.h"
+// VirtualReality Widgets includes
+#include "qMRMLVirtualRealityHomeWidget.h"
+#include "qMRMLVirtualRealityDataModuleWidget.h"
+#include "qMRMLVirtualRealitySegmentEditorWidget.h"
+#include "qMRMLVirtualRealityTransformWidget.h"
+
+// VirtualReality Logic includes
 #include "vtkSlicerVirtualRealityLogic.h"
+
+// VirtualReality MRML includes
+#include "vtkMRMLVirtualRealityViewNode.h"
 
 // Slicer includes
 #include "qSlicerApplication.h"
@@ -48,12 +56,6 @@
 
 // Markups Logic includes
 #include <vtkSlicerMarkupsLogic.h>
-
-// Virtual Reality includes
-#include "qMRMLVirtualRealityHomeWidget.h"
-#include "qMRMLVirtualRealityDataModuleWidget.h"
-#include "qMRMLVirtualRealitySegmentEditorWidget.h"
-#include "qMRMLVirtualRealityTransformWidget.h"
 
 // MRML includes
 #include "vtkMRMLLinearTransformNode.h"
@@ -133,7 +135,7 @@ void qSlicerGUIWidgetsModuleWidget::setup()
   QObject::connect(d->AddTransformWidgetButton, SIGNAL(clicked()), this, SLOT(onAddTransformWidgetButtonClicked()));
 
   QObject::connect(d->SetUpInteractionButton, SIGNAL(clicked()), this, SLOT(onSetUpInteractionButtonClicked()));
-  QObject::connect(d->StartInteractionButton, SIGNAL(clicked()), this, SLOT(onStartInteractionButtonClicked()));
+  QObject::connect(d->StartInteractionButton, SIGNAL(clicked()), this, SLOT(onStartInteractionButtonClicked()));  
 }
 
 //-----------------------------------------------------------------------------
@@ -253,8 +255,6 @@ void qSlicerGUIWidgetsModuleWidget::onSetUpInteractionButtonClicked()
 //-----------------------------------------------------------------------------
 void qSlicerGUIWidgetsModuleWidget::onStartInteractionButtonClicked()
 {
-  //std::cout << "\n\nqSlicerGUIWidgetsModuleWidget::onStartInteractionButtonClicked() \n";
-
   // Pointer transform
   qSlicerApplication* app = qSlicerApplication::application();
   vtkMRMLLinearTransformNode* transformNode = vtkMRMLLinearTransformNode::SafeDownCast(app->mrmlScene()->GetFirstNodeByName("PointerTransform"));
