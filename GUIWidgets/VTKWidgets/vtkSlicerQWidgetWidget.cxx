@@ -95,7 +95,7 @@ void vtkSlicerQWidgetWidget::CreateDefaultRepresentation(
   }
 
   bool wasSelectable = viewNode->GetSelectable();
-  viewNode->SetSelectable(false);  // Workaround to disable texture updates until setup is completed
+  viewNode->SetSelectable(false);  //TODO: Workaround to disable texture updates until setup is completed
 
   vtkNew<vtkSlicerQWidgetRepresentation> rep;
   this->SetRenderer(renderer);
