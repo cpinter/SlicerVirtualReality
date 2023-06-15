@@ -338,7 +338,7 @@ void qSlicerGUIWidgetsModuleWidget::onStartInteractionButtonClicked()
     }
   else
     {
-    //std::cout << "No intersection was found... \n";
+    //std::cout << "No intersection was found \n";
     return;
     }
 
@@ -386,13 +386,11 @@ void qSlicerGUIWidgetsModuleWidget::onStartInteractionButtonClicked()
   QGraphicsSceneMouseEvent pressEvent(QEvent::GraphicsSceneMousePress);
   pressEvent.setScenePos(QPointF(xPositionPixels, yPositionPixels));
   pressEvent.setButton(Qt::LeftButton);
-  pressEvent.setButtons(Qt::LeftButton); 
   QApplication::sendEvent(texture->GetScene(), &pressEvent);
 
   // Send release event  
   QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMouseRelease);
   releaseEvent.setScenePos(QPointF(xPositionPixels, yPositionPixels));
   releaseEvent.setButton(Qt::LeftButton);
-  releaseEvent.setButtons(Qt::LeftButton);
   QApplication::sendEvent(texture->GetScene(), &releaseEvent);
 }
