@@ -737,6 +737,27 @@ void vtkVirtualRealityViewInteractorStyle::EndDolly3D(vtkEventDataDevice3D* ed)
 }
 
 //----------------------------------------------------------------------------
+void vtkVirtualRealityViewInteractorStyle::StartPick(vtkEventDataDevice3D* ed)
+{
+  if (this->CurrentRenderer == nullptr)
+  {
+    return;
+  }
+  vtkEventDataDevice dev = ed->GetDevice();
+  this->Internal->InteractionState[static_cast<int>(dev)] = VTKIS_PICK;
+
+  // Let another class handle the pick event by connecting to this
+  this->InvokeEvent(vtkCommand::PickEvent);
+}
+
+//----------------------------------------------------------------------------
+void vtkVirtualRealityViewInteractorStyle::EndPick(vtkEventDataDevice3D* ed)
+{
+  vtkEventDataDevice dev = ed->GetDevice();
+  this->Internal->InteractionState[static_cast<int>(dev)] = VTKIS_NONE;
+}
+
+//----------------------------------------------------------------------------
 // Multitouch interaction methods
 //----------------------------------------------------------------------------
 
@@ -931,9 +952,9 @@ void vtkVirtualRealityViewInteractorStyle::StartAction(int state, vtkEventDataDe
     //case VTKIS_CLIP:
     //  this->StartClip(edata);
     //  break;
-    //case VTKIS_PICK:
-    //  this->StartPick(edata);
-    //  break;
+    case VTKIS_PICK:
+      this->StartPick(edata);
+      break;
     //case VTKIS_LOAD_CAMERA_POSE:
     //  this->StartLoadCamPose(edata);
     //  break;
@@ -954,9 +975,9 @@ void vtkVirtualRealityViewInteractorStyle::EndAction(int state, vtkEventDataDevi
     //case VTKIS_CLIP:
     //  this->EndClip(edata);
     //  break;
-    //case VTKIS_PICK:
-    //  this->EndPick(edata);
-    //  break;
+    case VTKIS_PICK:
+      this->EndPick(edata);
+      break;
     //case VTKIS_MENU:
     //  this->Menu->SetInteractor(this->Interactor);
     //  this->Menu->Show(edata);

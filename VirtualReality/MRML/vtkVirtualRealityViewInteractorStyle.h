@@ -77,8 +77,6 @@ public:
   /**
   * Interaction mode entry points.
   */
-  //virtual void StartPick(vtkEventDataDevice3D *);
-  //virtual void EndPick(vtkEventDataDevice3D *);
   //virtual void StartLoadCamPose(vtkEventDataDevice3D *);
   //virtual void EndLoadCamPose(vtkEventDataDevice3D *);
   virtual void StartPositionProp(vtkEventDataDevice3D *);
@@ -87,6 +85,8 @@ public:
   //virtual void EndClip(vtkEventDataDevice3D *);
   virtual void StartDolly3D(vtkEventDataDevice3D *);
   virtual void EndDolly3D(vtkEventDataDevice3D *);
+  virtual void StartPick(vtkEventDataDevice3D *);
+  virtual void EndPick(vtkEventDataDevice3D *);
   //@}
 
   //@{
