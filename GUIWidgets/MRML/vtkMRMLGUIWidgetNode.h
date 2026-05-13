@@ -50,7 +50,7 @@ public:
   const char* GetMarkupType() override {return "GUIWidget";};
 
   /// Get markup short name
-  const char* GetDefaultNodeNamePrefix() override {return "W";};
+  std::string GetDefaultNodeNamePrefix() override {return "W";};
 
   /// Read node attributes from XML file
   void ReadXMLAttributes( const char** atts) override;
