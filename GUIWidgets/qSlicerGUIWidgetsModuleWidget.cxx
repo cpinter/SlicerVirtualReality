@@ -59,6 +59,8 @@
 
 // MRML includes
 #include "vtkMRMLLinearTransformNode.h"
+#include "vtkMRMLModelDisplayNode.h"
+#include "vtkMRMLModelNode.h"
 #include "vtkMRMLScene.h"
 #include "vtkMRMLViewNode.h"
 
@@ -75,6 +77,8 @@
 #include "vtkPolyDataMapper.h"
 #include "vtkDataSet.h"
 #include "vtkCellLocator.h"
+#include "vtkLineSource.h"
+#include "vtkTubeFilter.h"
 
 // Qt includes
 #include <QDebug>
@@ -249,7 +253,83 @@ void qSlicerGUIWidgetsModuleWidget::onAddTransformWidgetButtonClicked()
 //-----------------------------------------------------------------------------
 void qSlicerGUIWidgetsModuleWidget::onSetUpInteractionButtonClicked()
 {
-  qCritical() << "----- onSetUpInteractionButtonClicked (no-op) ----- \n";
+  // Maximum distance for interaction. Must match onStartInteractionButtonClicked, as the
+  // pointer model built here is the visualization of the exact same ray that is used there
+  // to compute the intersection with the GUI widget.
+  const double maxDistanceForInteraction = 2000; // mm
+
+  qSlicerApplication* app = qSlicerApplication::application();
+
+  vtkSlicerVirtualRealityLogic* vrLogic = vtkSlicerVirtualRealityLogic::SafeDownCast(app->applicationLogic()->GetModuleLogic("VirtualReality"));
+  if (!vrLogic)
+  {
+    qCritical() << Q_FUNC_INFO << ": invalid VR logic";
+    return;
+  }
+  vtkMRMLVirtualRealityViewNode* vrViewNode = vrLogic->GetVirtualRealityViewNode();
+  if (!vrViewNode)
+  {
+    qCritical() << Q_FUNC_INFO << ": VR view node not found. Make sure Virtual Reality has been activated at least once.";
+    return;
+  }
+
+  // Make sure the controller transform nodes exist, then get the one for the right controller,
+  // which the pointer will be parented to (so that it moves and points along with the hand).
+  vrViewNode->CreateDefaultControllerTransformNodes();
+  vtkMRMLLinearTransformNode* rightControllerTransformNode = vrViewNode->GetRightControllerTransformNode();
+  if (!rightControllerTransformNode)
+  {
+    qCritical() << Q_FUNC_INFO << ": right controller transform not found. Make sure Virtual Reality is active.";
+    return;
+  }
+
+  vtkMRMLScene* scene = app->mrmlScene();
+
+  // Get or create the pointer transform node. onStartInteractionButtonClicked computes its
+  // click ray-cast from this node, so parenting it under the right controller transform is
+  // what makes the pointer (and the interaction it drives) follow the controller.
+  vtkMRMLLinearTransformNode* pointerTransformNode = vtkMRMLLinearTransformNode::SafeDownCast(
+    scene->GetFirstNodeByName("PointerTransform"));
+  if (!pointerTransformNode)
+  {
+    vtkNew<vtkMRMLLinearTransformNode> newPointerTransformNode;
+    newPointerTransformNode->SetName("PointerTransform");
+    scene->AddNode(newPointerTransformNode);
+    pointerTransformNode = newPointerTransformNode;
+  }
+  pointerTransformNode->SetAndObserveTransformNodeID(rightControllerTransformNode->GetID());
+
+  // Get or create the pointer model (the laser beam visualization), parented to the pointer
+  // transform. Its geometry (origin to -Z, same length as maxDistanceForInteraction) matches
+  // the ray tested in onStartInteractionButtonClicked so the visible beam is exactly what gets
+  // clicked against.
+  vtkMRMLModelNode* pointerModelNode = vtkMRMLModelNode::SafeDownCast(scene->GetFirstNodeByName("PointerModel"));
+  if (!pointerModelNode)
+  {
+    vtkNew<vtkLineSource> lineSource;
+    lineSource->SetPoint1(0.0, 0.0, 0.0);
+    lineSource->SetPoint2(0.0, 0.0, -maxDistanceForInteraction);
+
+    vtkNew<vtkTubeFilter> tubeFilter;
+    tubeFilter->SetInputConnection(lineSource->GetOutputPort());
+    tubeFilter->SetRadius(1.0);
+    tubeFilter->SetNumberOfSides(16);
+
+    vtkNew<vtkMRMLModelNode> newPointerModelNode;
+    newPointerModelNode->SetName("PointerModel");
+    newPointerModelNode->SetPolyDataConnection(tubeFilter->GetOutputPort());
+    newPointerModelNode->SetSelectable(false);
+    scene->AddNode(newPointerModelNode);
+
+    vtkNew<vtkMRMLModelDisplayNode> pointerModelDisplayNode;
+    pointerModelDisplayNode->SetColor(1.0, 0.0, 0.0);
+    pointerModelDisplayNode->SetOpacity(0.6);
+    scene->AddNode(pointerModelDisplayNode);
+    newPointerModelNode->SetAndObserveDisplayNodeID(pointerModelDisplayNode->GetID());
+
+    pointerModelNode = newPointerModelNode;
+  }
+  pointerModelNode->SetAndObserveTransformNodeID(pointerTransformNode->GetID());
 }
     
 //-----------------------------------------------------------------------------
