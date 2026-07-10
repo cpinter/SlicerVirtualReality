@@ -31,6 +31,9 @@
 #include <vtkOpenGLTexture.h>
 #include <vtkTrivialProducer.h>
 
+// Qt includes
+#include <QObject> // for QMetaObject::Connection
+
 #include <functional> // for ivar
 
 class QGraphicsScene;
@@ -77,6 +80,9 @@ protected:
 
   QGraphicsScene* Scene;
   QWidget* Widget;
+  /// Connection to the current Widget's objectNameChanged signal, used to detect when it needs to be
+  /// disconnected when switching to another widget (see SetWidget).
+  QMetaObject::Connection WidgetObjectNameChangedConnection;
 
   vtkSmartPointer<vtkImageData> TextureImageData;
   vtkSmartPointer<vtkTrivialProducer> TextureTrivialProducer;

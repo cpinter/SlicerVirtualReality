@@ -113,8 +113,9 @@ void vtkSlicerQWidgetWidget::SetRepresentation(vtkMRMLAbstractWidgetRepresentati
 {
   this->Superclass::SetRepresentation(rep);
 
-  vtkSlicerQWidgetRepresentation* qWidgetRep = vtkSlicerQWidgetRepresentation::SafeDownCast(rep);
-  if (!qWidgetRep)
+  // rep may legitimately be nullptr (e.g. when the displayable manager tears down the widget on
+  // hide/delete), so only report an error if a representation of the wrong type was given.
+  if (rep && !vtkSlicerQWidgetRepresentation::SafeDownCast(rep))
   {
     vtkErrorMacro("SetRepresentation: Given representation is not a vtkSlicerQWidgetRepresentation");
   }

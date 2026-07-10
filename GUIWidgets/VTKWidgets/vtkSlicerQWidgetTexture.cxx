@@ -41,7 +41,10 @@ vtkStandardNewMacro(vtkSlicerQWidgetTexture);
 //------------------------------------------------------------------------------
 vtkSlicerQWidgetTexture::vtkSlicerQWidgetTexture()
 {
-  this->Scene = nullptr;
+  // The scene is created once and reused for the lifetime of this texture (instead of being
+  // recreated every time a widget is set), so that widgets can be cleanly detached and
+  // re-embedded across repeated show/hide cycles (see SetWidget).
+  this->Scene = new QGraphicsScene();
   this->Widget = nullptr;
 
   this->UpdateTextureMethod = [this]() {
@@ -53,6 +56,8 @@ vtkSlicerQWidgetTexture::vtkSlicerQWidgetTexture()
     qMRMLUtils::qImageToVtkImageData(grabImage, this->TextureImageData.GetPointer());
     this->Modified();
   };
+
+  QObject::connect(this->Scene, &QGraphicsScene::changed, this->UpdateTextureMethod);
 }
 
 //------------------------------------------------------------------------------
@@ -83,9 +88,21 @@ void vtkSlicerQWidgetTexture::SetWidget(QWidget* w)
     return;
   }
 
-  if (w == nullptr && this->Scene && this->Widget->graphicsProxyWidget())
+  if (this->Widget)
   {
-    this->Scene->removeItem(this->Widget->graphicsProxyWidget());
+    QObject::disconnect(this->WidgetObjectNameChangedConnection);
+
+    // Detach the previous widget from its graphics proxy (and delete the proxy). This is
+    // required (not just removing it from the scene) because QGraphicsProxyWidget::setWidget()
+    // refuses to re-embed a widget that still reports a non-null graphicsProxyWidget(), which
+    // would otherwise silently break rendering and event handling for the widget the next time
+    // it is shown (e.g. after a hide/show cycle).
+    QGraphicsProxyWidget* proxy = this->Widget->graphicsProxyWidget();
+    if (proxy)
+    {
+      this->Scene->removeItem(proxy);
+      delete proxy;
+    }
   }
 
   this->Widget = w;
@@ -103,13 +120,11 @@ void vtkSlicerQWidgetTexture::SetupWidget()
     return;
   }
 
-  this->Scene = new QGraphicsScene();
-
   this->Widget->move(0, 0);
   this->Scene->addWidget(this->Widget);
 
-  QObject::connect(this->Scene, &QGraphicsScene::changed, this->UpdateTextureMethod);
-  QObject::connect(this->Widget, &QObject::objectNameChanged, this->UpdateTextureMethod); //TODO: Workaround, see vtkSlicerQWidgetRepresentation::OnTextureModified
+  this->WidgetObjectNameChangedConnection =
+    QObject::connect(this->Widget, &QObject::objectNameChanged, this->UpdateTextureMethod); //TODO: Workaround, see vtkSlicerQWidgetRepresentation::OnTextureModified
 
   if (this->TextureImageData.GetPointer() == nullptr)
   {
