@@ -139,7 +139,7 @@ void qSlicerGUIWidgetsModuleWidget::setup()
   QObject::connect(d->AddTransformWidgetButton, SIGNAL(clicked()), this, SLOT(onAddTransformWidgetButtonClicked()));
 
   QObject::connect(d->SetUpInteractionButton, SIGNAL(clicked()), this, SLOT(onSetUpInteractionButtonClicked()));
-  QObject::connect(d->StartInteractionButton, SIGNAL(clicked()), this, SLOT(onStartInteractionButtonClicked()));  
+  QObject::connect(d->StartInteractionButton, SIGNAL(clicked()), this, SLOT(onStartInteractionButtonClicked()));
 }
 
 //-----------------------------------------------------------------------------
@@ -244,7 +244,7 @@ void qSlicerGUIWidgetsModuleWidget::onAddTransformWidgetButtonClicked()
     qCritical() << Q_FUNC_INFO << " : invalid VR logic";
     return;
   }
- 
+
   qMRMLVirtualRealityTransformWidget* widget = new qMRMLVirtualRealityTransformWidget(vrLogic->GetVirtualRealityViewNode());
   widget->setMRMLScene(app->mrmlScene());
   this->setWidgetToGUIWidgetMarkupsNode(widgetNode, widget);
@@ -331,7 +331,7 @@ void qSlicerGUIWidgetsModuleWidget::onSetUpInteractionButtonClicked()
   }
   pointerModelNode->SetAndObserveTransformNodeID(pointerTransformNode->GetID());
 }
-    
+
 //-----------------------------------------------------------------------------
 void qSlicerGUIWidgetsModuleWidget::onStartInteractionButtonClicked()
 {
@@ -339,10 +339,10 @@ void qSlicerGUIWidgetsModuleWidget::onStartInteractionButtonClicked()
   qSlicerApplication* app = qSlicerApplication::application();
   vtkMRMLLinearTransformNode* transformNode = vtkMRMLLinearTransformNode::SafeDownCast(app->mrmlScene()->GetFirstNodeByName("PointerTransform"));
   if (!transformNode)
-    {
+  {
     qCritical() << Q_FUNC_INFO << ": Pointer transform was not found in scene";
     return;
-    }
+  }
 
   // Define maximum distance for interaction
   double maxDistanceForInteraction = 2000; // mm
@@ -363,25 +363,50 @@ void qSlicerGUIWidgetsModuleWidget::onStartInteractionButtonClicked()
 
   // Get GUI widget
   vtkMRMLGUIWidgetNode* widgetNode = vtkMRMLGUIWidgetNode::SafeDownCast(app->mrmlScene()->GetFirstNodeByName("HomeWidgetNode"));
+  if (!widgetNode)
+  {
+    qCritical() << Q_FUNC_INFO << ": GUI widget node was not found in scene";
+    return;
+  }
 
   // Get displayable manager
   qSlicerLayoutManager* layoutManager = qSlicerApplication::application()->layoutManager();
   if (!layoutManager)
-    {
+  {
     // application is closing
     return;
-    }
+  }
   qMRMLThreeDWidget* threeDWidget = layoutManager->threeDWidget(0);
   vtkMRMLMarkupsDisplayableManager* markupsDisplayableManager = vtkMRMLMarkupsDisplayableManager::SafeDownCast(
     threeDWidget->threeDView()->displayableManagerByClassName("vtkMRMLMarkupsDisplayableManager"));
-  
+  if (!markupsDisplayableManager)
+  {
+    qCritical() << Q_FUNC_INFO << ": Markups displayable manager was not found";
+    return;
+  }
+
   // Get widget representation from displayabale manager
   vtkMRMLMarkupsDisplayableManagerHelper* helper = markupsDisplayableManager->GetHelper();
   vtkSlicerQWidgetWidget* widget = vtkSlicerQWidgetWidget::SafeDownCast(helper->GetWidget(widgetNode->GetMarkupsDisplayNode()));
+  if (!widget)
+  {
+    qCritical() << Q_FUNC_INFO << ": No widget was found for the GUI widget node. Make sure it has been shown in this view.";
+    return;
+  }
   vtkSlicerQWidgetRepresentation* rep = vtkSlicerQWidgetRepresentation::SafeDownCast(widget->GetRepresentation());
+  if (!rep)
+  {
+    qCritical() << Q_FUNC_INFO << ": Invalid widget representation";
+    return;
+  }
 
   // Get plane source
   vtkPlaneSource* planeSource = vtkPlaneSource::SafeDownCast(rep->GetPlaneSource());
+  if (!planeSource)
+  {
+    qCritical() << Q_FUNC_INFO << ": Invalid plane source";
+    return;
+  }
 
   // Get plane normal
   double* planeNormal = planeSource->GetNormal();
@@ -403,7 +428,7 @@ void qSlicerGUIWidgetsModuleWidget::onStartInteractionButtonClicked()
   // Compute intersection point
   vtkNew<vtkCellLocator> cellLocator;
   cellLocator->SetDataSet(planeSource->GetOutput());
-  cellLocator->BuildLocator(); 
+  cellLocator->BuildLocator();
   double tolerance = 0.001;
   double t = 0.0;
   double pcoords[3] = { 0.0 };
@@ -413,34 +438,34 @@ void qSlicerGUIWidgetsModuleWidget::onStartInteractionButtonClicked()
   double intersectionPoint[3]= { 0.0, 0.0, 0.0 };
   int foundIntersection = cellLocator->IntersectWithLine(pointA_transf, pointB_transf, tolerance, t, intersectionPoint, pcoords, subId, cellId, cell);
   if (foundIntersection)
-    {
+  {
     //std::cout << "Intersection point: [" << intersectionPoint[0] << ", " << intersectionPoint[1] << ", " << intersectionPoint[2] << "] \n";
-    }
+  }
   else
-    {
+  {
     //std::cout << "No intersection was found \n";
     return;
-    }
+  }
 
   // Get plane dimensions
   vtkSlicerQWidgetTexture* texture = rep->GetQWidgetTexture();
   QWidget* qWidget = texture->GetWidget();
   if (!qWidget)
-    {
+  {
     return;
-    }
+  }
   QRect rect = qWidget->geometry();
   if (rect.width() < 2 || rect.height() < 2)
-    {
+  {
     return;
-    }
-  //std::cout << "Widget dimensions: width = " << rect.width() << " and height = " << rect.height() << "\n";  
+  }
+  //std::cout << "Widget dimensions: width = " << rect.width() << " and height = " << rect.height() << "\n";
   double spacingMmPerPixel = rep->GetSpacingMmPerPixel();
   double bounds[6] = {
     -(double)(rect.width() / 2) * spacingMmPerPixel, (double)rect.width() / 2 * spacingMmPerPixel,
     -0.5, 0.5,
     -(double)(rect.height() / 2) * spacingMmPerPixel, (double)rect.height() / 2 * spacingMmPerPixel
-    };
+  };
   //std::cout << "Widget bounds: [ " << bounds[0] << ", " << bounds[1] << ", " << bounds[2] << ", " << bounds[3] << ", " << bounds[4] << ", " << bounds[5] << "\n";
 
   // Compute pixel position
@@ -468,7 +493,7 @@ void qSlicerGUIWidgetsModuleWidget::onStartInteractionButtonClicked()
   pressEvent.setButton(Qt::LeftButton);
   QApplication::sendEvent(texture->GetScene(), &pressEvent);
 
-  // Send release event  
+  // Send release event
   QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMouseRelease);
   releaseEvent.setScenePos(QPointF(xPositionPixels, yPositionPixels));
   releaseEvent.setButton(Qt::LeftButton);
